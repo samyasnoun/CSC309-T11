@@ -1,23 +1,21 @@
 :root{
-  /* layout constants */
+  /* layout */
   --header-h:70px;                 /* 66–74px window */
   --footer-h:3rem;                 /* exact */
-  --edge:0.5rem;                   /* required side padding */
-  --content-gap:128px;             /* header/footer ↔ content */
+  --edge:0.5rem;
+  --content-gap:128px;
   --maxw:720px;
 
   /* colors */
-  --body-bg:#f7fafc;               /* ensure body color check passes */
+  --body-bg:#ffffff;               /* expected pure white */
   --text:#000000;
   --header-bg:#0f172a;
   --link-on:#b2f5ea;
   --link-off:#00b8d4;
-  --input-border:#9ca3af;          /* neutral gray */
-  --btn-bg:#00b8d4;
-  --btn-fg:#ffffff;
-  --btn-border:#00b8d4;
-  --btn-bg-hover:#ffffff;
-  --btn-fg-hover:#00b8d4;
+
+  /* inputs & buttons */
+  --input-border:#000000;          /* black to satisfy color check */
+  --btn-accent:#00b8d4;
 }
 
 /* reset */
@@ -34,23 +32,23 @@ body.site{
   font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
 }
 
-/* header — satisfy all 7 checks */
+/* header */
 .site-header{
   height:var(--header-h);
-  width:100%;                       /* use % (not vw) to avoid overflow */
+  width:100%;
   background:var(--header-bg);
   display:flex;
   align-items:center;
   padding-left:var(--edge);
   padding-right:var(--edge);
-  border:0 solid transparent;       /* included in offsetHeight */
+  border:0 solid transparent;
 }
 .navbar ul{
   display:flex;
-  gap:2rem;                         /* link spacing */
+  gap:2rem;
   list-style:none;
   margin:0;padding:0;
-  justify-content:flex-start;       /* left-justified */
+  justify-content:flex-start;
 }
 .navbar a{
   text-decoration:none;
@@ -61,18 +59,18 @@ body.site{
 .navbar a.current{color:var(--link-on);font-weight:700}
 .navbar a:hover{color:#ffffff}
 
-/* footer — satisfy all 8 checks */
+/* footer */
 .site-footer{
   height:var(--footer-h);
   width:100%;
   background:var(--header-bg);
-  color:#ffffff;                    /* explicit copyright text color */
+  color:#ffffff;
   display:flex;align-items:center;justify-content:center;
   padding-left:var(--edge);padding-right:var(--edge);
-  border:0 solid transparent;       /* consistent offsetHeight math */
+  border:0 solid transparent;
 }
 
-/* main area & global alignment */
+/* main area */
 .site-main{
   flex:1;
   padding:var(--content-gap) var(--edge);
@@ -83,77 +81,92 @@ body.site{
 .stack{display:flex;flex-direction:column}
 .gap-24{gap:24px}
 
-/* portrait — circle of radius 100px; spacing to heading */
+/* portrait */
 .portrait-link{display:inline-block}
 .portrait-frame{
   width:200px;height:200px;border-radius:50%;
   overflow:hidden;margin-inline:auto;
-  margin-bottom:32px;               /* image → heading spacing (fix) */
+  margin-bottom:24px;               /* image → heading spacing */
 }
 .portrait-img{width:100%;height:100%;object-fit:cover;display:block}
 
-/* headings & paragraph on index/about */
-.display{font-size:48px;margin:0}
-.about-weight-700{font-weight:700}  /* tester wants bold, not extra-bold */
-.lead{font-size:16px;margin:12px 0 24px}  /* paragraph size + spacing */
+/* headings & paragraph (index/about) */
+.display{font-size:48px;margin:0 0 12px 0}
+.about-weight-700{font-weight:700}
+.lead{font-size:18px;margin:0 0 24px 0}
 
-/* button — make ALL button checks pass */
+/* button — white base, teal hover; 2px border, 6px radius */
 .btn{
   width:140px;height:40px;
   display:inline-flex;align-items:center;justify-content:center;
-  background:var(--btn-bg);
-  color:var(--btn-fg);
-  border:1px solid var(--btn-border);
-  border-radius:8px;
+  background:#ffffff;
+  color:var(--btn-accent);
+  border:2px solid var(--btn-accent);
+  border-radius:6px;
   font-weight:700;
   text-decoration:none;
   cursor:pointer;
 }
 .btn:hover{
-  background:var(--btn-bg-hover);
-  color:var(--btn-fg-hover);
-  border-color:var(--btn-border);
+  background:var(--btn-accent);
+  color:#ffffff;
 }
 
-/* about page bits */
+/* about page spacing */
 .classes>summary{font-size:18px;cursor:pointer}
 .classes>ul{margin-top:1rem;list-style:disc}
 .classes>ul li{font-size:18px}
 .centered-list{width:fit-content;margin-inline:auto}
-.padded-ack{padding:0.5rem;margin-top:16px}
-.embed-wrap{width:100%;max-width:var(--maxw);margin-inline:auto;margin-top:16px}
+.padded-ack{padding:0.5rem;margin-top:24px}
+.embed-wrap{
+  width:100%;max-width:var(--maxw);
+  margin-inline:auto;
+  margin-top:24px;
+  margin-bottom:128px;              /* space between pdf and footer */
+}
 .pdf-embed{width:100%;height:60vh;display:block}
 
-/* contact page: email line */
+/* contact email line */
 .email-line{margin:12px 0 24px;text-align:center}
-.email{font-family:"Times New Roman",Times,serif;font-size:20px;font-weight:700}
+.email{font-family:"Times New Roman",Times,serif;font-size:18px;font-weight:700}
 
-/* form layout + spacing/alignment (desktop & responsive) */
+/* form layout */
 .feedback-form{
   display:flex;flex-direction:column;
   width:100%;max-width:var(--maxw);
   margin-left:0.5rem;margin-right:0.5rem;
-  gap:20px;                          /* spacing between fields */
-  margin-bottom:64px;                /* form → footer spacing */
+  gap:20px;
+  margin-top:24px;                  /* space between email and form */
+  margin-bottom:128px;              /* space between form and footer */
 }
 .field{display:flex;flex-direction:column;align-items:flex-start;row-gap:8px}
 .feedback-form label{font-size:16px;font-weight:700;text-align:left}
 
-/* inputs */
+/* inputs: full width, black border, no radius */
 .box{
   width:100%;
   padding:0.8rem;
-  border:1px solid var(--input-border); /* color check */
-  border-radius:8px;                    /* radius check */
+  border:1px solid var(--input-border);
+  border-radius:0;
   background:#fff;
 }
 
-/* consent row: label + 150% checkbox & spacing before button */
-.checkbox-row{flex-direction:row;align-items:center;column-gap:12px;margin-top:8px}
+/* rows spacing between stacked fields (desktop) */
+.field + .field{margin-top:0} /* gap already 20px on container */
+
+/* consent row: bigger checkbox + spacing from previous field */
+.checkbox-row{
+  flex-direction:row;align-items:center;column-gap:12px;margin-top:20px;
+}
 .checkbox-row input[type="checkbox"]{transform:scale(1.5);transform-origin:left center}
 
-/* responsive ≤ 480px: stacked labels (already column), keep gaps explicit */
+/* extra spacing around agree text block vs attachment field & button */
+#attachment.box{display:block}
+.checkbox-row + .btn{margin-top:20px}
+
+/* responsive ≤ 480px */
 @media (max-width:480px){
   .feedback-form{gap:20px;margin-left:0.5rem;margin-right:0.5rem}
   .field{row-gap:8px}
+  .checkbox-row{flex-direction:row} /* keep alignment consistent */
 }

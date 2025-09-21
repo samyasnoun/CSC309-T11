@@ -18,8 +18,11 @@ body {
   list-style: none;
 }
 
-.current {
-  border-bottom: 2px solid #e8797f;
+.current, .current a {
+  text-decoration: underline;
+  text-decoration-color: #e8797f;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
 }
 
 header {
@@ -34,6 +37,7 @@ header {
   display: flex;
   flex-direction: column;
   gap: 24px;
+  align-items: center;
 }
 
 #hero-section {

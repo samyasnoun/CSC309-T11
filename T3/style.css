@@ -1,0 +1,115 @@
+/* Base / shared */
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  line-height: 1.5;
+  color: #111;
+}
+
+/* ---- Navbar (both pages) ---- */
+.navbar ul {
+  display: flex;           /* render items horizontally */
+  gap: 20px;
+  list-style: none;        /* remove bullets */
+  padding: 0;
+  margin: 0;
+}
+
+.navbar li {               /* explicitly use this selector as required */
+  list-style: none;
+}
+
+.navbar a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.current a {               /* active page underline */
+  text-decoration: underline;
+  text-decoration-color: #e8797f;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+/* Optional header layout so things look neat */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 16px 20px;
+}
+
+/* ---- About page ---- */
+/* Place title above intro; then image and paragraph side-by-side with 100px gap */
+#hero-section {
+  display: flex;           /* required selector */
+  flex-direction: column;  /* title above the content below */
+  gap: 16px;
+}
+
+#hero {                    /* side-by-side image and intro */
+  display: flex;           /* required selector */
+  align-items: flex-start;
+  gap: 100px;              /* exact gap */
+}
+
+#section-title {           /* “About Me” heading size */
+  font-size: 30px;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Courses section */
+#courses-section {         /* required selector */
+  display: flex;           /* p + ul laid out in the correct direction */
+  flex-direction: column;  /* title above list */
+  align-items: center;     /* center along cross-axis */
+  gap: 12px;
+}
+
+#courses-section li {      /* required selector; bullets must show */
+  font-size: 15px;
+  list-style: disc;        /* ensure bullets */
+}
+
+/* ---- Contact page ---- */
+.contact-container {       /* center the section area */
+  display: flex;
+  justify-content: center;
+  align-items: center;     /* “justify and align all items” */
+  padding: 24px 20px;
+}
+
+.contact-container #hero-section {
+  display: flex;           /* title above the form */
+  flex-direction: column;
+  gap: 16px;
+}
+
+#hero-section #section-title { /* “Contact Me” size */
+  font-size: 30px;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Form layout and labels above fields */
+form {                     /* required selector */
+  display: flex;           /* use flex with proper direction */
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 480px;
+}
+
+/* Submit button styling */
+input[type="submit"] {     /* required selector */
+  background: #636161;
+  color: #fff;
+  border: none;            /* remove border */
+  width: 100px;            /* 100px x 30px */
+  height: 30px;
+  cursor: pointer;         /* pointer on hover */
+  align-self: flex-start;
+}

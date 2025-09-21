@@ -1,16 +1,13 @@
 :root{
-  --header-h:70px;          /* within 66–74px */
-  --footer-h:3rem;          /* exactly */
-  --space-edge:0.5rem;      /* side padding for all text */
-  --gap-128:128px;          /* content ↔ header/footer */
-  --brand-on:#b2f5ea;       /* active link */
-  --brand-off:#00b8d4;      /* inactive link */
+  --header-h:70px;          /* 66–74px */
+  --footer-h:3rem;          /* exact */
+  --space-edge:0.5rem;
+  --gap-128:128px;
+  --brand-on:#b2f5ea;
+  --brand-off:#00b8d4;
   --header-bg:#0f172a;
   --body-bg:#ffffff;
-  --text:#111111;
-  --btn-bg:#111111;
-  --btn-bg-hover:#000000;
-  --btn-fg:#ffffff;
+  --text:#000000;           /* pure black body text (tester check) */
   --maxw:720px;
 }
 
@@ -31,26 +28,26 @@ body{
   height:var(--header-h);
   display:flex;
   align-items:center;
-  width:100%;
+  width:100vw;                   /* full viewport width */
   padding:0 var(--space-edge);
   background:var(--header-bg);
 }
 .navbar ul{
   display:flex;
-  gap:2rem;                 /* spacing between links */
+  gap:2rem;                      /* 2rem spacing */
   list-style:none;
   margin:0;
   padding:0;
-  justify-content:flex-start; /* left-justified */
+  justify-content:flex-start;    /* left-justified */
 }
 .navbar a{
-  font-size:16px;           /* link size checks */
+  font-size:18px;                /* link size checks */
   font-weight:400;
   color:var(--brand-off);
   text-decoration:none;
 }
 .navbar a.current{
-  color:var(--brand-on);    /* active */
+  color:var(--brand-on);
   font-weight:700;
 }
 .navbar a:hover{color:#ffffff}
@@ -61,10 +58,10 @@ body{
   display:flex;
   align-items:center;
   justify-content:center;
-  width:100%;
+  width:100vw;
   padding:0 var(--space-edge);
   background:var(--header-bg);
-  color:#636161;            /* copyright text color */
+  color:#ffffff;                 /* requested copyright text color */
 }
 
 /* Main spacing + centering */
@@ -82,8 +79,7 @@ body{
 .stack{display:flex;flex-direction:column}
 .gap-24{gap:24px}
 
-/* Portrait (200x200 circle, preserve aspect) */
-.portrait-link{display:inline-block}
+/* Portrait (200x200 circle) */
 .portrait-frame{
   width:200px;height:200px;border-radius:50%;
   overflow:hidden;margin-inline:auto;margin-bottom:24px;
@@ -91,50 +87,45 @@ body{
 .portrait-img{width:100%;height:100%;object-fit:cover;display:block}
 
 /* Typography blocks */
-.display{font-size:32px;font-weight:800;margin:0 0 16px}   /* heading size/weight */
-.lead{font-size:18px;margin:0 0 24px}
+.display{font-size:36px;font-weight:800;margin:0 0 16px}
+.lead{font-size:16px;margin:0 0 24px}
 
-/* Button (strict spec to satisfy checks) */
+/* Button: strict spec to satisfy checks */
 .btn{
-  width:100px; height:30px;            /* explicit size */
-  display:inline-flex; align-items:center; justify-content:center;
-  background:var(--btn-bg);
-  color:var(--btn-fg);
-  border:none;                         /* no border */
-  border-radius:8px;
-  font-weight:600;
-  text-decoration:none;
-  cursor:pointer;
+  width:100px;height:30px;
+  display:inline-flex;align-items:center;justify-content:center;
+  background:#000000;color:#ffffff;
+  border:none;border-radius:0;
+  font-weight:400;text-decoration:none;cursor:pointer;
 }
-.btn:hover{background:var(--btn-bg-hover);color:#ffffff}
+.btn:hover{background:#111111;color:#ffffff}
 
 /* About page specifics */
 .classes>ul{margin-top:1rem;list-style:disc}
 .centered-list{width:fit-content;margin-inline:auto}
-.padded-ack{padding:0.5rem}
+.padded-ack{padding:0.5rem;margin-top:16px}
 .embed-wrap{width:100%;max-width:var(--maxw);margin-inline:auto;margin-top:16px}
 .pdf-embed{width:100%;height:60vh;display:block}
 
 /* Contact */
-.email-line{margin:0;text-align:center}
+.email-line{margin:0 0 24px;text-align:center}
 .email{font-family:"Times New Roman",Times,serif;font-size:18px;font-weight:400;word-break:break-word}
 
-/* Form: stacked labels above fields + responsive spacing */
+/* Form: stacked labels above fields */
 .feedback-form{
-  display:flex;flex-direction:column;gap:12px;
+  display:flex;flex-direction:column;gap:16px;
   margin-left:0.5rem;margin-right:0.5rem;
   width:100%;max-width:var(--maxw);
 }
 .field{display:flex;flex-direction:column;gap:6px}
-.box{
-  width:100%;padding:0.8rem;
-  border:1px solid #cbd5e1; border-radius:6px;
-}
+.feedback-form label{font-size:16px;font-weight:600}
+.box{width:100%;padding:0.8rem;border:1px solid #000;border-radius:0}
 
+/* Consent row */
 .checkbox-row{flex-direction:row;align-items:center;gap:12px}
 .checkbox-row input[type="checkbox"]{transform:scale(1.5);transform-origin:left center}
 
-/* Responsive ≤480px: stacked (already stacked, keep alignment tidy) */
+/* Responsive */
 @media (max-width:480px){
   .site-main>*{text-align:center}
 }

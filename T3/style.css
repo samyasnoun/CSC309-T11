@@ -1,4 +1,3 @@
-/* Base / shared */
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
 body {
@@ -7,32 +6,22 @@ body {
   color: #111;
 }
 
-/* ---- Navbar (both pages) ---- */
 .navbar ul {
-  display: flex;           /* render items horizontally */
+  display: flex;
   gap: 20px;
-  list-style: none;        /* remove bullets */
+  list-style: none;
   padding: 0;
   margin: 0;
 }
 
-.navbar li {               /* explicitly use this selector as required */
+.navbar li {
   list-style: none;
 }
 
-.navbar a {
-  text-decoration: none;
-  color: inherit;
+.current {
+  border-bottom: 2px solid #e8797f;
 }
 
-.current a {               /* active page underline */
-  text-decoration: underline;
-  text-decoration-color: #e8797f;
-  text-decoration-thickness: 2px;
-  text-underline-offset: 4px;
-}
-
-/* Optional header layout so things look neat */
 header {
   display: flex;
   align-items: center;
@@ -41,75 +30,76 @@ header {
   padding: 16px 20px;
 }
 
-/* ---- About page ---- */
-/* Place title above intro; then image and paragraph side-by-side with 100px gap */
+.hero-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
 #hero-section {
-  display: flex;           /* required selector */
-  flex-direction: column;  /* title above the content below */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 16px;
 }
 
-#hero {                    /* side-by-side image and intro */
-  display: flex;           /* required selector */
+#hero {
+  display: flex;
   align-items: flex-start;
-  gap: 100px;              /* exact gap */
+  gap: 100px;
 }
 
-#section-title {           /* “About Me” heading size */
+#section-title {
   font-size: 30px;
   font-weight: 600;
   margin: 0;
 }
 
-/* Courses section */
-#courses-section {         /* required selector */
-  display: flex;           /* p + ul laid out in the correct direction */
-  flex-direction: column;  /* title above list */
-  align-items: center;     /* center along cross-axis */
+#courses-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 12px;
 }
 
-#courses-section li {      /* required selector; bullets must show */
+#courses-section li {
   font-size: 15px;
-  list-style: disc;        /* ensure bullets */
+  list-style: disc;
 }
 
-/* ---- Contact page ---- */
-.contact-container {       /* center the section area */
+.contact-container {
   display: flex;
   justify-content: center;
-  align-items: center;     /* “justify and align all items” */
+  align-items: center;
   padding: 24px 20px;
 }
 
 .contact-container #hero-section {
-  display: flex;           /* title above the form */
+  display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-#hero-section #section-title { /* “Contact Me” size */
+#hero-section #section-title {
   font-size: 30px;
   font-weight: 600;
   margin: 0;
 }
 
-/* Form layout and labels above fields */
-form {                     /* required selector */
-  display: flex;           /* use flex with proper direction */
+form {
+  display: flex;
   flex-direction: column;
   gap: 12px;
   width: 100%;
   max-width: 480px;
 }
 
-/* Submit button styling */
-input[type="submit"] {     /* required selector */
+input[type="submit"] {
   background: #636161;
   color: #fff;
-  border: none;            /* remove border */
-  width: 100px;            /* 100px x 30px */
+  border: none;
+  width: 100px;
   height: 30px;
-  cursor: pointer;         /* pointer on hover */
+  cursor: pointer;
   align-self: flex-start;
 }

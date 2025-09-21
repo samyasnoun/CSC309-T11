@@ -25,9 +25,11 @@
 
   <main class="site-main">
     <div class="stack gap-24 center max-720">
-      <div class="portrait-frame">
-        <img src="portrait.jpg" alt="Portrait" class="portrait-img">
-      </div>
+      <a href="about.html" class="portrait-link">
+        <div class="portrait-frame">
+          <img src="portrait.jpg" alt="Portrait" class="portrait-img">
+        </div>
+      </a>
 
       <h1 class="display">Samy Asnoun</h1>
 
@@ -38,9 +40,9 @@
         </a>
       </p>
 
-      <form class="feedback-form" action="https://postman-echo.com/post" method="post">
+      <form class="feedback-form" action="https://postman-echo.com/post" method="post" enctype="multipart/form-data">
         <div class="field">
-          <label for="email">Email</label>
+          <label for="email">Your Email</label>
           <input class="box" type="email" id="email" name="email" required>
         </div>
 

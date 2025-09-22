@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="site">
-  <header class="site-header">
+  <header id="header" class="site-header">
     <nav class="navbar" aria-label="Main navigation">
       <ul>
         <li><a href="index.html">Home</a></li>
@@ -24,10 +24,10 @@
   </header>
 
   <main class="site-main">
-    <div class="stack gap-24 center max-720">
+    <div class="stack center max-720">
       <a class="portrait-link" href="index.html">
         <div class="portrait-frame">
-          <img src="portrait.jpg" alt="Portrait" class="portrait-img">
+          <img src="https://via.placeholder.com/200" alt="Portrait" class="portrait-img">
         </div>
       </a>
 
@@ -57,8 +57,8 @@
         </div>
 
         <div class="field checkbox-row">
-          <label for="consent">You agree to receive emails from me</label>
-          <input type="checkbox" id="consent" name="consent" value="yes" required>
+           <input type="checkbox" id="consent" name="consent" value="yes" required>
+           <label for="consent">You agree to receive emails from me</label>
         </div>
 
         <button class="btn" type="submit">Send Feedback</button>
@@ -66,7 +66,7 @@
     </div>
   </main>
 
-  <footer class="site-footer">
+  <footer id="footer" class="site-footer">
     <p>Copyright 2025 by asnounsa.</p>
   </footer>
 </body>

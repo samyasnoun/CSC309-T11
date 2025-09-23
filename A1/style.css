@@ -48,11 +48,17 @@ h1,h2,h3,h4,h5,h6,p,a,li,summary,label,button{
   padding-left:var(--edge);
   padding-right:var(--edge);
 }
+
+#header {
+  background-color: #000000 !important;
+}
+
 .navbar ul{
   display:flex;
   gap:2rem;
   list-style:none;
-  margin:0;padding:0;
+  margin:0;
+  padding:0;
   justify-content:flex-start;
 }
 .navbar a{
@@ -60,9 +66,16 @@ h1,h2,h3,h4,h5,h6,p,a,li,summary,label,button{
   color:var(--link-off); 
   font-size:18px;
   font-weight:400;
+  padding:0;
 }
-.navbar a.current{color:var(--link-on);font-weight:700}
-.navbar a:hover{color:#ffffff}
+.navbar a.current{
+  color:var(--link-on);
+  font-weight:700
+
+}
+.navbar a:hover{
+  color:#ffffff
+}
 
 /* footer */
 .site-footer{
@@ -195,6 +208,3 @@ h1,h2,h3,h4,h5,h6,p,a,li,summary,label,button{
   .checkbox-row{flex-direction:row;column-gap:8px}
 }
 
-/* force header/footer IDs in case tester checks by ID */
-#header{ background-color:#000000; background-image:none; }
-#footer{ background-color:#000000; background-image:none; }

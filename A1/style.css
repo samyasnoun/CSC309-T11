@@ -80,6 +80,10 @@ header,
   color:#ffffff;     /* hover = white for all */
 }
 
+/* Header and footer: make the background unambiguous on the exact elements */
+.site-header{ background:#000000 !important; }
+.site-footer{ background:#000000 !important; }
+
 h1,h2,h3,h4,h5,h6,p,li,summary,label,button{ padding-left:.5rem; padding-right:.5rem; }
 a{ padding-left:.5rem; padding-right:.5rem; }
 .site-header .navbar a{ padding-left:0; padding-right:0; }
@@ -128,26 +132,27 @@ a{ padding-left:.5rem; padding-right:.5rem; }
 /* headings & paragraph (index/about) */
 .display{font-size:48px;margin:0 0 16px 0}
 .about-weight-700{font-weight:700}
-.lead{font-size:18px;margin:0 0 24px 0} 
+.lead{font-size:16px;margin:0 0 24px 0} 
 
 /* button — white base, teal hover; 2px border, 6px radius */
 .btn{
-  width:126px; 
-  height:40px; 
+  width:126px;               
+  height:40px;
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  background:#ffffff;
-  color:var(--btn-accent);        
-  border:2px solid var(--btn-accent); 
-  border-radius:6px;              
+  background:#ffffff;        
+  color:#000000;             
+  border:2px solid #000000;  
+  border-radius:4px;         
   font-weight:700;
   text-decoration:none;
   cursor:pointer;
 }
 .btn:hover{
-  background:var(--btn-accent);   
-  color:#ffffff;                        
+  background:#ffffff;      
+  color:#ffffff;            
+  border-color:#000000;                        
 }
 
 /* about page spacing */
@@ -156,18 +161,18 @@ a{ padding-left:.5rem; padding-right:.5rem; }
 .classes>ul{margin-top:1rem;list-style:disc}
 .classes>ul li{font-size:18px}
 .centered-list{width:fit-content;margin-inline:auto}
-.padded-ack{padding:0.5rem;margin-top:24px}
+.padded-ack{padding:0.5rem;margin-top:16px;margin-bottom:0;}
 .embed-wrap{
   width:100%;max-width:var(--maxw);
   margin-inline:auto;
-  margin-top:24px;
+  margin-top:16px;
   margin-bottom:128px;              
 }
 .pdf-embed{width:100%;height:60vh;display:block}
 
 /* contact email line */
 .email-line{margin:0 0 24px;text-align:center}
-.email{font-family:"Times New Roman",Times,serif;font-size:16px;font-weight:700}
+.email{font-family:"Times New Roman",Times,serif;font-size:18px;font-weight:700}
 
 /* form layout */
 .feedback-form{
@@ -175,18 +180,24 @@ a{ padding-left:.5rem; padding-right:.5rem; }
   width:100%;max-width:var(--maxw);
   margin-left:0; margin-right:0;           
   gap:32px;
-  margin-top:24px;                  
+  margin-top:0;                  
   margin-bottom:64px;              
 }
 .field{display:flex;flex-direction:row;align-items:center;column-gap:16px}  
 .feedback-form label{font-size:16px;font-weight:700;text-align:right} 
 
+/* ADD THIS BLOCK just below ↑ */
+.feedback-form .btn{
+  align-self:flex-start;   
+  width:142px;             
+}
+
 /* inputs: full width, black border, no radius */
 .box{
   width:100%;
   padding:0.8rem;
-  border:1px solid #000;
-  border-radius:0;
+  border:1px solid #00b8d4;
+  border-radius:4px;
   background:#fff;
 }
 
@@ -198,6 +209,11 @@ a{ padding-left:.5rem; padding-right:.5rem; }
   flex-direction:row;align-items:center;column-gap:12px;margin-top:20px;
 }
 .checkbox-row input[type="checkbox"]{transform:scale(1.5);transform-origin:left center}
+
+
+.checkbox-row label{
+  text-align:left;
+}
 
 /* extra spacing around agree text block vs attachment field & button */
 #attachment.box{display:block}
@@ -213,4 +229,6 @@ a{ padding-left:.5rem; padding-right:.5rem; }
   .field{flex-direction:column;align-items:flex-start;row-gap:8px}  
   .feedback-form label{text-align:left}
   .checkbox-row{flex-direction:row;column-gap:8px}
+  .checkbox-row input[type="checkbox"]{ margin-left:0; }
+  .feedback-form .btn{ margin-left:0; }
 }

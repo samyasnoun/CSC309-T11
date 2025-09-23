@@ -69,15 +69,15 @@ header,
   font-size:18px;
   font-weight:400;
   margin:0;
-  padding:0;         
+  padding:0;        
   color:#00b8d4;     
 }
 .navbar a.current{
-  color:#b2f5ea;     
+  color:#b2f5ea;     /* active page */
   font-weight:700;
 }
 .navbar a:hover{
-  color:#ffffff;     
+  color:#ffffff;     /* hover = white for all */
 }
 
 h1,h2,h3,h4,h5,h6,p,li,summary,label,button{ padding-left:.5rem; padding-right:.5rem; }

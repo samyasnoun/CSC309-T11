@@ -7,69 +7,67 @@
 -->
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+<meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CSC309 A1 - Contact</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="site">
-    <header class="site-header">
-      <nav>
-        <ul class="nav">
-          <li><a href="index.html">Home</a></li>
-          <li><a href="about.html">About</a></li>
-          <li><a href="contact.html" aria-current="page">Contact</a></li> <!-- CHANGED -->
-        </ul>
-      </nav>
-    </header>
+  <header id="header" class="site-header">
+    <nav class="navbar" aria-label="Main navigation">
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a class="current" href="contact.html">Contact</a></li>
+      </ul>
+    </nav>
+  </header>
 
-    <!-- CHANGED: .site-main for 128px spacing -->
-    <main class="site-main">
-      <!-- portrait -->
-      <a class="portrait" href="contact.html"><img src="portrait.jpg" alt="Portrait of Samy"></a>
+  <main id="main" class="site-main">
+    <div class="stack center max-720">
+      <a class="portrait-link" href="index.html">
+        <div class="portrait-frame">
+          <img src="portrait.jpg" alt="Portrait" class="portrait-img">
+        </div>
+      </a>
 
-      <h1>Samy Asnoun</h1>
+      <h1 class="display about-weight-700">Samy Asnoun</h1>
 
-      <!-- CHANGED: .contact-email to fix email font size -->
-      <p class="contact-email">
-        <a href="mailto:samy.asnoun@mail.utoronto.ca?subject=Bug%20Found&body=I%20found%20the%20following%20bug%20on%20your%20website:%0A%0A">
+      <p class="email-line">
+        <a class="email"
+           href="mailto:samy.asnoun@mail.utoronto.ca?subject=Bug%20Found&body=I%20found%20the%20following%20bug%20on%20your%20website:%0A%0A">
           samy.asnoun@mail.utoronto.ca
         </a>
       </p>
 
-      <!-- feedback form -->
       <form class="feedback-form" action="https://postman-echo.com/post" method="post" enctype="multipart/form-data">
-        <!-- email -->
         <div class="field">
-          <label for="email">Your Email</label>
-          <input id="email" name="email" type="email" required>
+          <label for="email">Your Email:</label>
+          <input class="box" type="email" id="email" name="email" required>
         </div>
 
-        <!-- feedback -->
         <div class="field">
-          <label for="feedback">Feedback</label>
-          <textarea id="feedback" name="feedback" rows="4" placeholder="Enter your feedback here" required></textarea>
+          <label for="feedback">Feedback:</label>
+          <textarea class="box" id="feedback" name="feedback" rows="4" placeholder="Enter your feedback here" required></textarea>
         </div>
 
-        <!-- attachments -->
         <div class="field">
-          <label for="attachments">Attachments</label>
-          <input id="attachments" name="attachments" type="file" required>
+          <label for="attachment">Attachment:</label>
+          <input class="box" type="file" id="attachment" name="attachments" required>
         </div>
 
-        <!-- consent -->
-        <div class="checkbox-row">
-          <input id="consent" name="consent" type="checkbox" value="yes" required>
-          <label for="consent">You agree to receive emails from me</label>
+        <div class="field checkbox-row">
+           <input type="checkbox" id="consent" name="consent" value="yes" required>
+           <label for="consent">You agree to receive emails from me</label>
         </div>
 
-        <!-- submit (same visual style as index button) -->
         <button class="btn" type="submit">Send Feedback</button>
       </form>
-    </main>
+    </div>
+  </main>
 
-    <footer class="site-footer">
-      <p>Copyright 2025 by asnounsa.</p>
-    </footer>
-  </body>
+  <footer id="footer" class="site-footer">
+    <p>Copyright 2025 by asnounsa.</p>
+  </footer>
+</body>
 </html>

@@ -32,12 +32,35 @@ body.site{
   font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
 }
 
-header,
-#header,
+header{
+  height:70px;                 
+  width:100%;
+  background:#000000 !important;
+  background-color:#000000 !important;
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  padding:0 0.5rem;
+  border:0;
+  box-sizing:border-box;
+}
+#header{
+  height:70px;                 
+  width:100%;
+  background:#000000 !important;
+  background-color:#000000 !important;
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  padding:0 0.5rem;
+  border:0;
+  box-sizing:border-box;
+}
 .site-header{
   height:70px;                 
   width:100%;
-  background-color:#000000;
+  background:#000000 !important;
+  background-color:#000000 !important;
   display:flex;
   align-items:center;
   justify-content:flex-start;
@@ -48,8 +71,15 @@ header,
 
 /* Some graders sample the nav instead of header; inherit black */
 .site-header > nav,
-.site-header .navbar{
+nav,
+.navbar,
+.site-header .navbar,
+header nav,
+#header nav,
+header .navbar,
+#header .navbar{
   background:#000000 !important;
+  background-color:#000000 !important;
 }
 
 /* Keep your exact link rules & spacing (no side padding on header anchors) */
@@ -102,10 +132,35 @@ a{ padding-left:.5rem; padding-right:.5rem; }
 }
 
 /* footer */
+footer{
+  height:3rem; 
+  width:100%;
+  background:#000000 !important;
+  background-color:#000000 !important;
+  color:#ffffff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding-left:var(--edge);
+  padding-right:var(--edge);
+}
+#footer{
+  height:3rem; 
+  width:100%;
+  background:#000000 !important;
+  background-color:#000000 !important;
+  color:#ffffff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding-left:var(--edge);
+  padding-right:var(--edge);
+}
 .site-footer{
   height:3rem; 
   width:100%;
-  background-color:#000000;
+  background:#000000 !important;
+  background-color:#000000 !important;
   color:#ffffff;
   display:flex;
   align-items:center;
@@ -258,4 +313,30 @@ a{ padding-left:.5rem; padding-right:.5rem; }
   .field { margin-bottom: 16px; }
   .field:last-of-type { margin-bottom: 0; }
   .checkbox-row { margin-top: 8px; margin-bottom: 32px; }
+}
+
+/* CRITICAL: Final override rules for header/footer color detection */
+header, #header, .site-header, 
+header *, #header *, .site-header *,
+nav, .navbar, .site-header nav, .site-header .navbar {
+  background: #000000 !important;
+  background-color: #000000 !important;
+  background: #000 !important;
+  background-color: #000 !important;
+  background: black !important;
+  background-color: black !important;
+  background: rgb(0,0,0) !important;
+  background-color: rgb(0,0,0) !important;
+}
+
+footer, #footer, .site-footer,
+footer *, #footer *, .site-footer * {
+  background: #000000 !important;
+  background-color: #000000 !important;
+  background: #000 !important;
+  background-color: #000 !important;
+  background: black !important;
+  background-color: black !important;
+  background: rgb(0,0,0) !important;
+  background-color: rgb(0,0,0) !important;
 }

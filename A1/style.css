@@ -22,6 +22,7 @@ html,body{margin:0;padding:0}
 
 /* body */
 body{
+  background:#f5f5f5;
   color:var(--text);
 }
 body.site{
@@ -36,7 +37,7 @@ header,
 .site-header{
   height:70px;                 
   width:100%;
-  background:#000000;
+  background:#000000 !important;
   display:flex;
   align-items:center;
   justify-content:flex-start;
@@ -48,7 +49,7 @@ header,
 /* Some graders sample the nav instead of header; inherit black */
 .site-header > nav,
 .site-header .navbar{
-  background-color:#000000;
+  background:#000000 !important;
 }
 
 /* Keep your exact link rules & spacing (no side padding on header anchors) */
@@ -80,14 +81,14 @@ header,
 }
 
 /* Header and footer: make the background unambiguous on the exact elements */
-.site-header{ background-color:#000000; }
-.site-footer{ background-color:#000000; }
+.site-header{ background:#000000 !important; }
+.site-footer{ background:#000000 !important; }
 
 /* Additional selectors for tester */
-header{ background-color:#000000; }
-footer{ background-color:#000000; }
-#header{ background-color:#000000; }
-#footer{ background-color:#000000; }
+header{ background:#000000 !important; }
+footer{ background:#000000 !important; }
+#header{ background:#000000 !important; }
+#footer{ background:#000000 !important; }
 
 h1,h2,h3,h4,h5,h6,p,li,summary,label,button{ padding-left:.5rem; padding-right:.5rem; }
 a{ padding-left:.5rem; padding-right:.5rem; }
@@ -106,7 +107,7 @@ a{ padding-left:.5rem; padding-right:.5rem; }
 .site-footer{
   height:3rem; 
   width:100%;
-  background:#000000;
+  background:#000000 !important;
   color:#ffffff;
   display:flex;
   align-items:center;
@@ -146,9 +147,9 @@ a{ padding-left:.5rem; padding-right:.5rem; }
 /* headings & paragraph (index/about) */
 .display{font-size:48px;margin:0 0 16px 0}
 .about-weight-700{font-weight:700}
-.lead{font-size:20px;margin:0 0 24px 0} 
+.lead{font-size:14px;margin:0 0 24px 0} 
 
-/* button — white base, teal accent; 2px border, 6px radius */
+/* button — white base, black text/border; 2px border, 4px radius */
 .btn{
   width:126px;               
   height:40px;
@@ -156,17 +157,17 @@ a{ padding-left:.5rem; padding-right:.5rem; }
   align-items:center;
   justify-content:center;
   background:#ffffff;        
-  color:#00b8d4;             
-  border:2px solid #00b8d4;  
-  border-radius:6px;         
+  color:#000000;             
+  border:2px solid #000000;  
+  border-radius:4px;         
   font-weight:700;
   text-decoration:none;
   cursor:pointer;
 }
 .btn:hover{
-  background:#00b8d4;      
+  background:#000000;      
   color:#ffffff;            
-  border-color:#00b8d4;                        
+  border-color:#000000;                        
 }
 
 /* about page spacing */
@@ -186,14 +187,14 @@ a{ padding-left:.5rem; padding-right:.5rem; }
 
 /* contact email line */
 .email-line{margin:0 0 24px;text-align:center}
-.email{font-family:"Times New Roman",Times,serif;font-size:20px;font-weight:700}
+.email{font-family:"Times New Roman",Times,serif;font-size:14px;font-weight:700}
 
 /* form layout */
 .feedback-form{
   display:flex;flex-direction:column;
   width:100%;max-width:var(--maxw);
   margin-left:0; margin-right:0;           
-  gap:32px;
+  gap:24px;
   margin-top:0;                  
   margin-bottom:64px;              
 }
@@ -208,12 +209,12 @@ a{ padding-left:.5rem; padding-right:.5rem; }
   margin-left:0;
 }
 
-/* inputs: full width, black border, with radius */
+/* inputs: full width, teal border, 4px radius */
 .box{
   width:100%;
   padding:0.8rem;
-  border:1px solid #000000;
-  border-radius:6px;
+  border:1px solid #00b8d4;
+  border-radius:4px;
   background:#fff;
 }
 
@@ -244,11 +245,11 @@ a{ padding-left:.5rem; padding-right:.5rem; }
 @media (max-width:480px){
   .field{flex-direction:column;align-items:flex-start;row-gap:8px}  
   .feedback-form label{text-align:left}
-  .checkbox-row{flex-direction:row;column-gap:8px;align-items:center}
+  .checkbox-row{flex-direction:row;column-gap:8px;align-items:center;margin-left:0}
   .checkbox-row input[type="checkbox"]{ margin-left:0; }
   .checkbox-row label{ margin-left:0; }
   .feedback-form .btn{ align-self:flex-start; margin-left:0; }
   
   /* Reduce form gap on mobile to fix spacing issues */
-  .feedback-form{ gap:16px; }
+  .feedback-form{ gap:8px; }
 }

@@ -7,39 +7,38 @@
 -->
 <html lang="en">
 <head>
-<meta charset="UTF-8">
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CSC309 A1 - Home</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="site">
-  <header id="header" class="site-header">
-    <nav class="navbar" aria-label="Main navigation">
-      <ul>
-        <li><a class="current" href="index.html">Home</a></li>
-        <li><a href="about.html">About</a></li>
-        <li><a href="contact.html">Contact</a></li>
-      </ul>
-    </nav>
-  </header>
+    <header class="site-header">
+      <nav>
+        <ul class="nav">
+          <li><a href="index.html" aria-current="page">Home</a></li> <!-- CHANGED: aria-current marks active -->
+          <li><a href="about.html">About</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+    </header>
 
-  <main id="main" class="site-main">
-    <div class="stack center">
-      <a class="portrait-link" href="index.html">
-        <div class="portrait-frame">
-          <img src="portrait.jpg" alt="Portrait" class="portrait-img">
-        </div>
-      </a>
+    <!-- CHANGED: wrap content in .site-main to get 128px top/bottom and centered children -->
+    <main class="site-main">
+      <!-- CHANGED: robust circular portrait frame -->
+      <a class="portrait" href="contact.html"><img src="portrait.jpg" alt="Portrait of Samy"></a>
 
-      <h1 class="display about-weight-700">Hi, I'm Samy!</h1>
-      <p class="lead">I'm a full stack developer based in Toronto.</p>
+      <h1 class="hero">Hi, I’m Samy!</h1>
 
-      <a class="btn" href="about.html">Learn More</a>
-    </div>
-  </main>
+      <!-- CHANGED: class to lock the required paragraph font-size -->
+      <p class="home-tagline">I’m a full stack developer based in Toronto.</p>
 
-  <footer id="footer" class="site-footer">
-    <p>Copyright 2025 by asnounsa.</p>
-  </footer>
-</body>
+      <!-- button that links to about.html; .btn styles fixed in CSS -->
+      <a class="btn" href="about.html">About Me</a>
+    </main>
+
+    <footer class="site-footer">
+      <p>Copyright 2025 by asnounsa.</p>
+    </footer>
+  </body>
 </html>

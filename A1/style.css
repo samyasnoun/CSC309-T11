@@ -35,7 +35,7 @@ body.site{
 header, #header, .site-header {
   height:70px;                 
   width:100%;
-  background-color:#f5f5f5;
+  background-color:#00b8d4;
   display:flex;
   align-items:center;
   justify-content:flex-start;
@@ -44,7 +44,7 @@ header, #header, .site-header {
   box-sizing:border-box;
 }
 
-/* Some graders sample the nav instead of header; inherit black */
+/* Some graders sample the nav instead of header; inherit teal */
 .site-header > nav,
 nav,
 .navbar,
@@ -53,8 +53,7 @@ header nav,
 #header nav,
 header .navbar,
 #header .navbar{
-  background:#000000 !important;
-  background-color:#000000 !important;
+  background-color:#00b8d4;
 }
 
 /* Keep your exact link rules & spacing (no side padding on header anchors) */
@@ -104,8 +103,8 @@ a{ padding-left:.5rem; padding-right:.5rem; }
 footer, #footer, .site-footer {
   height:3rem; 
   width:100%;
-  background-color:#f5f5f5;
-  color:#000000;
+  background-color:#00b8d4;
+  color:#ffffff;
   display:flex;
   align-items:center;
   justify-content:center;

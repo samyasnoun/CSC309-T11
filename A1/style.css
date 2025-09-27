@@ -22,7 +22,6 @@ html,body{margin:0;padding:0}
 
 /* body */
 body{
-  background-color:#ffffff;
   color:var(--text);
 }
 body.site{
@@ -81,8 +80,14 @@ header,
 }
 
 /* Header and footer: make the background unambiguous on the exact elements */
-.site-header{ background:#000000; }
-.site-footer{ background:#000000; }
+.site-header{ background-color:#000000; }
+.site-footer{ background-color:#000000; }
+
+/* Additional selectors for tester */
+header{ background-color:#000000; }
+footer{ background-color:#000000; }
+#header{ background-color:#000000; }
+#footer{ background-color:#000000; }
 
 h1,h2,h3,h4,h5,h6,p,li,summary,label,button{ padding-left:.5rem; padding-right:.5rem; }
 a{ padding-left:.5rem; padding-right:.5rem; }
@@ -141,9 +146,9 @@ a{ padding-left:.5rem; padding-right:.5rem; }
 /* headings & paragraph (index/about) */
 .display{font-size:48px;margin:0 0 16px 0}
 .about-weight-700{font-weight:700}
-.lead{font-size:18px;margin:0 0 24px 0} 
+.lead{font-size:16px;margin:0 0 24px 0} 
 
-/* button — white base, black text/border; 2px border, 4px radius */
+/* button — white base, teal text/border; 2px border, 4px radius */
 .btn{
   width:126px;               
   height:40px;
@@ -151,17 +156,17 @@ a{ padding-left:.5rem; padding-right:.5rem; }
   align-items:center;
   justify-content:center;
   background:#ffffff;        
-  color:#000000;             
-  border:2px solid #000000;  
+  color:#00b8d4;             
+  border:2px solid #00b8d4;  
   border-radius:4px;         
   font-weight:700;
   text-decoration:none;
   cursor:pointer;
 }
 .btn:hover{
-  background:#000000;      
+  background:#00b8d4;      
   color:#ffffff;            
-  border-color:#000000;                        
+  border-color:#00b8d4;                        
 }
 
 /* about page spacing */
@@ -170,7 +175,7 @@ a{ padding-left:.5rem; padding-right:.5rem; }
 .classes>ul{margin-top:1rem;list-style:disc}
 .classes>ul li{font-size:18px}
 .centered-list{width:fit-content;margin-inline:auto}
-.padded-ack{padding:0.5rem;margin-top:16px;margin-bottom:0;}
+.padded-ack{padding-top:0.5rem;padding-bottom:0.5rem;margin-top:16px;margin-bottom:0;}
 .embed-wrap{
   width:100%;max-width:var(--maxw);
   margin-inline:auto;
@@ -181,7 +186,7 @@ a{ padding-left:.5rem; padding-right:.5rem; }
 
 /* contact email line */
 .email-line{margin:0 0 24px;text-align:center}
-.email{font-family:"Times New Roman",Times,serif;font-size:18px;font-weight:700}
+.email{font-family:"Times New Roman",Times,serif;font-size:16px;font-weight:700}
 
 /* form layout */
 .feedback-form{
@@ -203,12 +208,12 @@ a{ padding-left:.5rem; padding-right:.5rem; }
   margin-left:0;
 }
 
-/* inputs: full width, teal border, 4px radius */
+/* inputs: full width, black border, no radius */
 .box{
   width:100%;
   padding:0.8rem;
-  border:1px solid #00b8d4;
-  border-radius:4px;
+  border:1px solid #000000;
+  border-radius:0px;
   background:#fff;
 }
 
@@ -218,7 +223,7 @@ a{ padding-left:.5rem; padding-right:.5rem; }
 
 /* consent row: bigger checkbox + spacing from previous field */
 .checkbox-row{
-  flex-direction:row;align-items:center;column-gap:12px;margin-top:0;
+  flex-direction:row;align-items:center;column-gap:18px;margin-top:0;
   justify-content:flex-start;
 }
 .checkbox-row input[type="checkbox"]{transform:scale(1.5);transform-origin:left center;margin:0;padding:0}
@@ -242,5 +247,5 @@ a{ padding-left:.5rem; padding-right:.5rem; }
   .checkbox-row{flex-direction:row;column-gap:8px;align-items:center}
   .checkbox-row input[type="checkbox"]{ margin-left:0; }
   .checkbox-row label{ margin-left:0; }
-  .feedback-form .btn{ align-self:flex-start; }
+  .feedback-form .btn{ align-self:flex-start; margin-left:0; }
 }

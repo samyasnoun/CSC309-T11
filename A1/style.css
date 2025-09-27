@@ -22,7 +22,7 @@ html,body{margin:0;padding:0}
 
 /* body */
 body{
-  background-color:#ffffff;
+  background:#f5f5f5;
   color:var(--text);
 }
 body.site{
@@ -37,7 +37,7 @@ header,
 .site-header{
   height:70px;                 
   width:100%;
-  background-color:#000000;
+  background:#000;
   display:flex;
   align-items:center;
   justify-content:flex-start;
@@ -105,7 +105,7 @@ a{ padding-left:.5rem; padding-right:.5rem; }
 .site-footer{
   height:3rem; 
   width:100%;
-  background-color:#000000;
+  background:#000;
   color:#ffffff;
   display:flex;
   align-items:center;
@@ -145,7 +145,7 @@ a{ padding-left:.5rem; padding-right:.5rem; }
 /* headings & paragraph (index/about) */
 .display{font-size:48px;margin:0 0 16px 0}
 .about-weight-700{font-weight:700}
-.lead{font-size:14px;margin:0 0 24px 0} 
+.lead{font-size:16px;margin:0 0 24px 0} 
 
 /* button — white base, black text/border; 2px border, 4px radius */
 .btn{
@@ -154,18 +154,18 @@ a{ padding-left:.5rem; padding-right:.5rem; }
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  background-color:#00b8d4;        
-  color:#ffffff;             
-  border:2px solid #00b8d4;  
-  border-radius:4px;         
+  background:#ffffff;        
+  color:#000000;             
+  border:2px solid #000000;  
+  border-radius:8px;         
   font-weight:700;
   text-decoration:none;
   cursor:pointer;
 }
 .btn:hover{
-  background-color:#b2f5ea;      
-  color:#000000;            
-  border-color:#00b8d4;                        
+  background:#000000;      
+  color:#ffffff;            
+  border-color:#000000;                        
 }
 
 /* about page spacing */
@@ -185,19 +185,23 @@ a{ padding-left:.5rem; padding-right:.5rem; }
 
 /* contact email line */
 .email-line{margin:0 0 24px;text-align:center}
-.email{font-family:"Times New Roman",Times,serif;font-size:14px;font-weight:700}
+.email{font-family:"Times New Roman",Times,serif;font-size:16px;font-weight:700}
 
 /* form layout */
 .feedback-form{
   display:flex;flex-direction:column;
   width:100%;max-width:var(--maxw);
   margin-left:0; margin-right:0;           
-  gap:24px;
+  gap:32px;
   margin-top:0;                  
   margin-bottom:64px;              
 }
 .field{display:flex;flex-direction:row;align-items:center;column-gap:16px}  
-.feedback-form label{font-size:16px;font-weight:700;text-align:right;padding:0;margin:0} 
+.feedback-form label{font-size:16px;font-weight:700;text-align:right;padding:0;margin:0}
+
+/* Specific field spacing */
+.field + .field { margin-top: 16px; }
+.checkbox-row { margin-top: 32px; } 
 
 /* ADD THIS BLOCK just below ↑ */
 .feedback-form .btn{
@@ -207,12 +211,12 @@ a{ padding-left:.5rem; padding-right:.5rem; }
   margin-left:0;
 }
 
-/* inputs: full width, teal border, 4px radius */
+/* inputs: full width, black border, 8px radius */
 .box{
   width:100%;
   padding:0.8rem;
-  border:1px solid #00b8d4;
-  border-radius:4px;
+  border:1px solid #000000;
+  border-radius:8px;
   background:#fff;
 }
 
@@ -243,11 +247,13 @@ a{ padding-left:.5rem; padding-right:.5rem; }
 @media (max-width:480px){
   .field{flex-direction:column;align-items:flex-start;row-gap:8px}  
   .feedback-form label{text-align:left}
-  .checkbox-row{flex-direction:row;column-gap:8px;align-items:center;margin-left:0}
-  .checkbox-row input[type="checkbox"]{ margin-left:0; }
-  .checkbox-row label{ margin-left:0; }
-  .feedback-form .btn{ align-self:flex-start; margin-left:0; }
+  .checkbox-row{flex-direction:row;column-gap:8px;align-items:center;justify-content:flex-start}
+  .checkbox-row input[type="checkbox"]{ margin:0; }
+  .checkbox-row label{ margin:0; text-align:left; }
+  .feedback-form .btn{ align-self:flex-start; margin:0; }
   
   /* Reduce form gap on mobile to fix spacing issues */
-  .feedback-form{ gap:8px; }
+  .feedback-form{ gap:16px; }
+  .field + .field { margin-top: 0; }
+  .checkbox-row { margin-top: 16px; }
 }

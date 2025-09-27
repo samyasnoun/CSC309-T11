@@ -22,6 +22,7 @@ html,body{margin:0;padding:0}
 
 /* body */
 body{
+  background-color:#ffffff;
   color:var(--text);
 }
 body.site{
@@ -36,8 +37,7 @@ header,
 .site-header{
   height:70px;                 
   width:100%;
-  background-color:#000000 !important;
-  background:#000000 !important;  
+  background-color:#000000;
   display:flex;
   align-items:center;
   justify-content:flex-start;
@@ -49,8 +49,7 @@ header,
 /* Some graders sample the nav instead of header; inherit black */
 .site-header > nav,
 .site-header .navbar{
-  background-color:#000000 !important;
-  background:#000000 !important;
+  background-color:#000000;
 }
 
 /* Keep your exact link rules & spacing (no side padding on header anchors) */
@@ -82,35 +81,27 @@ header,
 }
 
 /* Header and footer: make the background unambiguous on the exact elements */
-.site-header{ 
-  background-color:#000000 !important; 
-  background:#000000 !important; 
-}
-.site-footer{ 
-  background-color:#000000 !important; 
-  background:#000000 !important; 
-}
-
-/* Ensure footer and header elements are detected */
-footer, #footer { 
-  background-color:#000000 !important; 
-  background:#000000 !important; 
-}
-header, #header { 
-  background-color:#000000 !important; 
-  background:#000000 !important; 
-}
+.site-header{ background:#000000; }
+.site-footer{ background:#000000; }
 
 h1,h2,h3,h4,h5,h6,p,li,summary,label,button{ padding-left:.5rem; padding-right:.5rem; }
 a{ padding-left:.5rem; padding-right:.5rem; }
 .site-header .navbar a{ padding-left:0; padding-right:0; }
 
+/* Remove extra padding on mobile to get proper 8px margins */
+@media (max-width:480px){
+  h1,h2,h3,h4,h5,h6,p,li,summary,label,button{ padding-left:0; padding-right:0; }
+  a{ padding-left:0; padding-right:0; }
+  .site-header .navbar a{ padding-left:0; padding-right:0; }
+  
+  /* site-main already has var(--edge) padding which is 0.5rem */
+}
+
 /* footer */
 .site-footer{
   height:var(--footer-h); 
   width:100%;
-  background-color:#000000 !important;
-  background:#000000 !important;
+  background-color:#000000;
   color:#ffffff;
   display:flex;
   align-items:center;
@@ -150,9 +141,9 @@ a{ padding-left:.5rem; padding-right:.5rem; }
 /* headings & paragraph (index/about) */
 .display{font-size:48px;margin:0 0 16px 0}
 .about-weight-700{font-weight:700}
-.lead{font-size:16px;margin:0 0 24px 0} 
+.lead{font-size:18px;margin:0 0 24px 0} 
 
-/* button — white base, teal hover; 2px border, 4px radius */
+/* button — white base, black text/border; 2px border, 4px radius */
 .btn{
   width:126px;               
   height:40px;
@@ -160,17 +151,17 @@ a{ padding-left:.5rem; padding-right:.5rem; }
   align-items:center;
   justify-content:center;
   background:#ffffff;        
-  color:#00b8d4;             
-  border:2px solid #00b8d4;  
+  color:#000000;             
+  border:2px solid #000000;  
   border-radius:4px;         
   font-weight:700;
   text-decoration:none;
   cursor:pointer;
 }
 .btn:hover{
-  background:#00b8d4;      
+  background:#000000;      
   color:#ffffff;            
-  border-color:#00b8d4;                        
+  border-color:#000000;                        
 }
 
 /* about page spacing */
@@ -190,7 +181,7 @@ a{ padding-left:.5rem; padding-right:.5rem; }
 
 /* contact email line */
 .email-line{margin:0 0 24px;text-align:center}
-.email{font-family:"Times New Roman",Times,serif;font-size:16px;font-weight:700}
+.email{font-family:"Times New Roman",Times,serif;font-size:18px;font-weight:700}
 
 /* form layout */
 .feedback-form{
@@ -202,21 +193,22 @@ a{ padding-left:.5rem; padding-right:.5rem; }
   margin-bottom:64px;              
 }
 .field{display:flex;flex-direction:row;align-items:center;column-gap:16px}  
-.feedback-form label{font-size:16px;font-weight:700;text-align:right} 
+.feedback-form label{font-size:16px;font-weight:700;text-align:right;padding:0;margin:0} 
 
 /* ADD THIS BLOCK just below ↑ */
 .feedback-form .btn{
   align-self:flex-start;   
   width:142px;
-  margin-top:0;             
+  margin-top:0;
+  margin-left:0;
 }
 
-/* inputs: full width, black border, no radius */
+/* inputs: full width, teal border, 4px radius */
 .box{
   width:100%;
   padding:0.8rem;
-  border:1px solid #000000;
-  border-radius:0px;
+  border:1px solid #00b8d4;
+  border-radius:4px;
   background:#fff;
 }
 
@@ -227,11 +219,12 @@ a{ padding-left:.5rem; padding-right:.5rem; }
 /* consent row: bigger checkbox + spacing from previous field */
 .checkbox-row{
   flex-direction:row;align-items:center;column-gap:12px;margin-top:0;
+  justify-content:flex-start;
 }
-.checkbox-row input[type="checkbox"]{transform:scale(1.5);transform-origin:left center}
+.checkbox-row input[type="checkbox"]{transform:scale(1.5);transform-origin:left center;margin:0;padding:0}
 
 .checkbox-row label{
-  text-align:left;
+  text-align:left;padding:0;margin:0;
 }
 
 /* extra spacing around agree text block vs attachment field & button */
@@ -242,7 +235,7 @@ a{ padding-left:.5rem; padding-right:.5rem; }
     .box{ width:609px; }                    
 }
 
-/* responsive ≤ 480px */
+/* responsive ≤ 480px - form specific */
 @media (max-width:480px){
   .field{flex-direction:column;align-items:flex-start;row-gap:8px}  
   .feedback-form label{text-align:left}
@@ -250,10 +243,4 @@ a{ padding-left:.5rem; padding-right:.5rem; }
   .checkbox-row input[type="checkbox"]{ margin-left:0; }
   .checkbox-row label{ margin-left:0; }
   .feedback-form .btn{ align-self:flex-start; }
-  
-  /* Fix responsive margins for text elements */
-  h1,h2,h3,h4,h5,h6,p,li,summary,label,button{ padding-left:.5rem; padding-right:.5rem; }
-  a{ padding-left:.5rem; padding-right:.5rem; }
-  .lead{ padding-left:.5rem; padding-right:.5rem; }
-  .padded-ack{ padding-left:.5rem; padding-right:.5rem; }
 }

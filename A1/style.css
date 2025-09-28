@@ -13,11 +13,9 @@
   --link-off: #00B8D4;
   --btn-blue: #007EA8;
 
-  /* NEW: form alignment & consent sizing tokens (for exact test measurements) */
-  --label-col: 140px;           /* label column width from prototype */
-  --label-gap: 16px;            /* label→input gap from prototype */
-  --consent-box: 14px;          /* visual checkbox box (no transform) */
-  --consent-gap: 18px;          /* checkbox↔label exact desktop spacing */
+  /* alignment tokens */
+  --label-col: 140px;    /* label column width */
+  --label-gap: 16px;     /* label→input gap */
 }
 
 *{ box-sizing:border-box }
@@ -41,7 +39,7 @@ header,#header,.site-header{
   justify-content:flex-start;
   border:0;
   box-sizing:border-box;
-  padding-left:24px;            /* Home is 24px from left */
+  padding-left:24px;
 }
 
 .site-header>nav,nav,.navbar,.site-header .navbar,header nav,#header nav{
@@ -65,13 +63,12 @@ header,#header,.site-header{
   font-size:19.2px;
   font-weight:400;
   margin:0;
-  padding:16px 0;               /* normal link vertical padding */
+  padding:16px 0;
   color:var(--link-off);
 }
 .navbar a.current{ color:var(--link-on); font-weight:700 }
 .navbar a:hover{ color:#FFFFFF; text-decoration:underline }
 
-/* first link should not add extra left padding */
 .navbar li:first-child a{ padding-left:0 }
 
 h1,h2,h3,h4,h5,h6,p,li,summary,label,button{ padding-left:.5rem; padding-right:.5rem }
@@ -170,26 +167,23 @@ footer,#footer,.site-footer{
 .field{
   display:flex;
   flex-direction:row;
-  align-items:baseline;                 /* label sits by the input text line */
+  align-items:baseline;
   column-gap:16px;
   width:100%;
-  margin-bottom:16px;                   /* 16px between inputs */
+  margin-bottom:16px;
 }
 
-/* EXACT vertical gap Email→Feedback = 32px (matches Case 3) */
-.feedback-form .email{ margin-bottom:32px; }   /* NEW */
+/* Exact 32px after email field */
+.feedback-form .email{ margin-bottom:32px; }
 
-/* Ensure the generic nudge does not affect spacing in Case 3 */
-.feedback-form .field:nth-of-type(2) .box{ margin-top:0; } /* CHANGED (was -0.4px) */
+/* Remove label nudge */
+.field + .field > label{ margin-top:0; }
 
 .feedback-form label{
   font-size:16px; font-weight:700; text-align:right;
   padding:0; margin:0; min-width:var(--label-col); flex-shrink:0;
 }
-/* keep label→label visual rhythm without changing measured gaps */
-.field + .field > label{ margin-top:2px }
 
-/* inputs */
 .box{
   width:100%;
   padding:.8rem;
@@ -203,34 +197,34 @@ footer,#footer,.site-footer{
   .box{ width:609px }
 }
 
+/* Attachment field must leave 32px before consent row */
+.field.attachment{ margin-bottom:32px; }
+
 /* Consent row (desktop) */
-/* Left-edge of AGREE TEXT must align with left-edge of inputs.
-   We shift the whole row left by checkbox width + 18px gap. */
 .checkbox-row{
   display:flex;
   flex-direction:row;
   align-items:center;
-  column-gap:var(--consent-gap);                        /* EXACT 18px */
+  column-gap:18px;                           /* EXACT 18px */
   justify-content:flex-start;
-  margin-left: calc(var(--label-col) + var(--label-gap) - (var(--consent-box) + var(--consent-gap))); /* NEW: aligns agree text with inputs */
-  margin-top:32px;                                      /* NEW: EXACT gap Attachments→Agree Text = 32px */
-  margin-bottom:32px;                                   /* keep existing bottom spacing */
+  margin-left: calc(var(--label-col) + var(--label-gap));
+  margin-top:0;
+  margin-bottom:32px;
 }
 
-/* Use explicit size, no transform (prevents subpixel drift in tests) */
+/* Transform required: scaled to 20×20px visual */
 .checkbox-row input[type="checkbox"]{
-  width:var(--consent-box);
-  height:var(--consent-box);
+  transform:scale(1.5);                      /* REQUIRED */
+  transform-origin:left center;
   margin:0; padding:0;
 }
 
-/* Agree label: no extra margins/padding that would shift x/y */
 .checkbox-row label{ text-align:left; padding:0; margin:0 }
 
-/* Submit button aligns with inputs on desktop */
+/* Submit button aligns with inputs */
 .feedback-form .btn{
   align-self:flex-start;
-  margin-left: calc(var(--label-col) + var(--label-gap));   /* 140 + 16 = 156 */
+  margin-left: calc(var(--label-col) + var(--label-gap));
   width:142px;
   margin-top:0;
 }
@@ -241,18 +235,17 @@ footer,#footer,.site-footer{
     flex-direction:column;
     align-items:flex-start;
     row-gap:8px;
-    margin-bottom:16px;                   /* keep 16px between inputs on mobile */
+    margin-bottom:16px;
   }
   .feedback-form label{ text-align:left; min-width:auto }
-  .field + .field > label{ margin-top:0 } /* label-to-label handled by row-gap */
+  .field + .field > label{ margin-top:0 }
 
-  /* consent: stack vertically, EXACT 8px gap, flush-left for both */
   .checkbox-row{
     flex-direction:column;
     align-items:flex-start;
-    row-gap:8px;                          /* CHANGED: was 0 → EXACT 8px for test */
+    row-gap:8px;                  /* EXACT 8px mobile */
     column-gap:0;
-    margin-left:0;                        /* input column collapses */
+    margin-left:0;
     margin-top:0;
     margin-bottom:32px;
     padding-top:0;
@@ -260,7 +253,6 @@ footer,#footer,.site-footer{
   .checkbox-row input[type="checkbox"]{ margin:0 }
   .checkbox-row label{ margin:0; text-align:left }
 
-  /* button shares the same left edge on mobile */
   .feedback-form .btn{
     align-self:flex-start;
     margin-left:0;

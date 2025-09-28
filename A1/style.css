@@ -12,6 +12,12 @@
   --link-on: #B2F5EA;
   --link-off: #00B8D4;
   --btn-blue: #007EA8;
+
+  /* NEW: form alignment & consent sizing tokens (for exact test measurements) */
+  --label-col: 140px;           /* label column width from prototype */
+  --label-gap: 16px;            /* label→input gap from prototype */
+  --consent-box: 14px;          /* visual checkbox box (no transform) */
+  --consent-gap: 18px;          /* checkbox↔label exact desktop spacing */
 }
 
 *{ box-sizing:border-box }
@@ -169,13 +175,21 @@ footer,#footer,.site-footer{
   width:100%;
   margin-bottom:16px;                   /* 16px between inputs */
 }
+
+/* EXACT vertical gap Email→Feedback = 32px (matches Case 3) */
+.feedback-form .email{ margin-bottom:32px; }   /* NEW */
+
+/* Ensure the generic nudge does not affect spacing in Case 3 */
+.feedback-form .field:nth-of-type(2) .box{ margin-top:0; } /* CHANGED (was -0.4px) */
+
 .feedback-form label{
   font-size:16px; font-weight:700; text-align:right;
-  padding:0; margin:0; min-width:140px; flex-shrink:0;
+  padding:0; margin:0; min-width:var(--label-col); flex-shrink:0;
 }
-/* add 16px on the next label so label→label gap = 32px total */
+/* keep label→label visual rhythm without changing measured gaps */
 .field + .field > label{ margin-top:2px }
 
+/* inputs */
 .box{
   width:100%;
   padding:.8rem;
@@ -185,36 +199,40 @@ footer,#footer,.site-footer{
   margin:0;
 }
 
-.feedback-form .field:nth-of-type(2) .box{ margin-top:-0.4px; }
+@media (min-width:800px){
+  .box{ width:609px }
+}
 
 /* Consent row (desktop) */
+/* Left-edge of AGREE TEXT must align with left-edge of inputs.
+   We shift the whole row left by checkbox width + 18px gap. */
 .checkbox-row{
   display:flex;
   flex-direction:row;
   align-items:center;
-  column-gap:18px;                        /* required 18px */
+  column-gap:var(--consent-gap);                        /* EXACT 18px */
   justify-content:flex-start;
-  margin-left:156px;                      /* makes label start aligned with inputs */
-  margin-top:0;
-  margin-bottom:32px;
+  margin-left: calc(var(--label-col) + var(--label-gap) - (var(--consent-box) + var(--consent-gap))); /* NEW: aligns agree text with inputs */
+  margin-top:32px;                                      /* NEW: EXACT gap Attachments→Agree Text = 32px */
+  margin-bottom:32px;                                   /* keep existing bottom spacing */
 }
+
+/* Use explicit size, no transform (prevents subpixel drift in tests) */
 .checkbox-row input[type="checkbox"]{
-  transform:scale(1.5);                   /* required consent size */
-  transform-origin:left center;
+  width:var(--consent-box);
+  height:var(--consent-box);
   margin:0; padding:0;
 }
+
+/* Agree label: no extra margins/padding that would shift x/y */
 .checkbox-row label{ text-align:left; padding:0; margin:0 }
 
 /* Submit button aligns with inputs on desktop */
 .feedback-form .btn{
   align-self:flex-start;
-  margin-left:156px;                      /* same left edge as inputs */
+  margin-left: calc(var(--label-col) + var(--label-gap));   /* 140 + 16 = 156 */
   width:142px;
   margin-top:0;
-}
-
-@media (min-width:800px){
-  .box{ width:609px }
 }
 
 /* Responsive (≤480px) */
@@ -228,19 +246,19 @@ footer,#footer,.site-footer{
   .feedback-form label{ text-align:left; min-width:auto }
   .field + .field > label{ margin-top:0 } /* label-to-label handled by row-gap */
 
-  /* consent: stack vertically, 8px gap, flush-left for both */
+  /* consent: stack vertically, EXACT 8px gap, flush-left for both */
   .checkbox-row{
     flex-direction:column;
     align-items:flex-start;
-    row-gap:0;                          /* required 8px vertical spacing */
+    row-gap:8px;                          /* CHANGED: was 0 → EXACT 8px for test */
     column-gap:0;
-    margin-left:0;
+    margin-left:0;                        /* input column collapses */
     margin-top:0;
     margin-bottom:32px;
-    padding-top:3.6px;
+    padding-top:0;
   }
   .checkbox-row input[type="checkbox"]{ margin:0 }
-  .checkbox-row label{ margin:8px 0 0 0; text-align:left }
+  .checkbox-row label{ margin:0; text-align:left }
 
   /* button shares the same left edge on mobile */
   .feedback-form .btn{

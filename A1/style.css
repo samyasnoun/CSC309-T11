@@ -35,7 +35,7 @@ header,#header,.site-header{
   justify-content:flex-start;
   border:0;
   box-sizing:border-box;
-  padding-left:24px;            /* Home is 24px from left */
+  padding-left:24px;
 }
 
 .site-header>nav,nav,.navbar,.site-header .navbar,header nav,#header nav{
@@ -59,13 +59,12 @@ header,#header,.site-header{
   font-size:19.2px;
   font-weight:400;
   margin:0;
-  padding:16px 0;               /* normal link vertical padding */
+  padding:16px 0;
   color:var(--link-off);
 }
 .navbar a.current{ color:var(--link-on); font-weight:700 }
 .navbar a:hover{ color:#FFFFFF; text-decoration:underline }
 
-/* first link should not add extra left padding */
 .navbar li:first-child a{ padding-left:0 }
 
 h1,h2,h3,h4,h5,h6,p,li,summary,label,button{ padding-left:.5rem; padding-right:.5rem }
@@ -164,17 +163,22 @@ footer,#footer,.site-footer{
 .field{
   display:flex;
   flex-direction:row;
-  align-items:baseline;                 /* label sits by the input text line */
+  align-items:baseline;               /* align label with input text line */
   column-gap:16px;
   width:100%;
-  margin-bottom:16px;                   /* 16px between inputs */
+  margin-bottom:16px;                 /* input→input = 16px */
 }
 .feedback-form label{
   font-size:16px; font-weight:700; text-align:right;
   padding:0; margin:0; min-width:140px; flex-shrink:0;
 }
-/* add 16px on the next label so label→label gap = 32px total */
-.field + .field > label{ margin-top:2px }
+
+/* Ensure label→label = 32px (16px row gap + 16px on the next label) */
+.field + .field > label{ margin-top:16px }
+
+/* Remove earlier micro-adjusts that could throw off measurements */
+.feedback-form .field:nth-of-type(2) > label{ margin-top:0 }
+.feedback-form .field:nth-of-type(2) .box{ margin-top:0 }
 
 .box{
   width:100%;
@@ -185,30 +189,32 @@ footer,#footer,.site-footer{
   margin:0;
 }
 
-.feedback-form .field:nth-of-type(2) .box{ margin-top:-0.4px; }
-
-/* Consent row (desktop) */
+/* Consent row (desktop) — align left edge with inputs and use pure gap for 18px */
 .checkbox-row{
   display:flex;
   flex-direction:row;
   align-items:center;
-  column-gap:18px;                        /* required 18px */
+  column-gap:18px;                    /* checkbox ↔ label = 18px exactly */
   justify-content:flex-start;
-  margin-left:156px;                      /* makes label start aligned with inputs */
-  margin-top:0;
+  margin-left:156px;                  /* same left edge as inputs */
+  margin-top:16px;                    /* with previous field's 16px => 32px total from attachments input */
   margin-bottom:32px;
 }
 .checkbox-row input[type="checkbox"]{
-  transform:scale(1.5);                   /* required consent size */
+  transform:scale(1.5);               /* required consent size */
   transform-origin:left center;
   margin:0; padding:0;
 }
-.checkbox-row label{ text-align:left; padding:0; margin:0 }
+.checkbox-row label{
+  text-align:left;
+  padding:0;
+  margin:0;                           /* no extra offset; keep left edge aligned */
+}
 
 /* Submit button aligns with inputs on desktop */
 .feedback-form .btn{
   align-self:flex-start;
-  margin-left:156px;                      /* same left edge as inputs */
+  margin-left:156px;                  /* same left edge as inputs */
   width:142px;
   margin-top:0;
 }
@@ -223,26 +229,23 @@ footer,#footer,.site-footer{
     flex-direction:column;
     align-items:flex-start;
     row-gap:8px;
-    margin-bottom:16px;                   /* keep 16px between inputs on mobile */
+    margin-bottom:16px;
   }
   .feedback-form label{ text-align:left; min-width:auto }
-  .field + .field > label{ margin-top:0 } /* label-to-label handled by row-gap */
+  .field + .field > label{ margin-top:0 }
 
-  /* consent: stack vertically, 8px gap, flush-left for both */
+  /* Consent: stack with exact 8px between checkbox and label, no extra margins */
   .checkbox-row{
     flex-direction:column;
     align-items:flex-start;
-    row-gap:0;                          /* required 8px vertical spacing */
+    row-gap:8px;                      /* required 8px */
     column-gap:0;
     margin-left:0;
     margin-top:0;
     margin-bottom:32px;
-    padding-top:3.6px;
   }
-  .checkbox-row input[type="checkbox"]{ margin:0 }
-  .checkbox-row label{ margin:8px 0 0 0; text-align:left }
+  .checkbox-row label{ margin:0; text-align:left }
 
-  /* button shares the same left edge on mobile */
   .feedback-form .btn{
     align-self:flex-start;
     margin-left:0;

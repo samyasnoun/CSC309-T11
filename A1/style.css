@@ -80,7 +80,7 @@ header nav,
 }
 
 .navbar li:first-child a {
-  padding-left: 12px;  
+  padding-left: 32px;  
 }
 
 h1,h2,h3,h4,h5,h6,p,li,summary,label,button{ padding-left:.5rem; padding-right:.5rem; }

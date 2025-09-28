@@ -350,6 +350,6 @@ footer,#footer,.site-footer{
 /* FINAL PATCH: Desktop email-input → feedback-input gap = 16px exactly */
 @media (min-width: 481px){
   .feedback-form .field:nth-of-type(2) .box{
-    margin-top: 7.6px !important; /* 8.4 + 7.6 = 16.0 */
+    margin-top: 23.6px !important; /* 8.4 + 7.6 = 16.0 */
   }
 }

@@ -56,6 +56,7 @@ class Timer {
 
     remove() {
         clearInterval(this.interval);
+        this.interval = null; 
         this.removeFn();
         timers = timers.filter(t => t.id !== this.id);
         update_stats();

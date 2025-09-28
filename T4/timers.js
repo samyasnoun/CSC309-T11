@@ -43,6 +43,7 @@ class Timer {
                 this.updateDisplay();
             } else {
                 clearInterval(this.interval);
+                this.interval = null; 
             }
         }, 1000);
     }
@@ -82,9 +83,7 @@ function create_timer(event, form)
     }
 
     let container = document.createElement("details");
-    const new_id = next_id;
     const remove = (_e) => {
-        timers = timers.filter((elem) => elem.id !== new_id);
         container.remove(); 
     };
 
@@ -109,7 +108,12 @@ function create_timer(event, form)
     `;
     container.setAttribute("open", "");
     let anchors = Array.from(container.getElementsByTagName("a"));
-    anchors.forEach((elem, _i) => { elem.addEventListener("click", remove) });
+    anchors.forEach((elem) => {
+        elem.addEventListener("click", (e) => {
+            e.preventDefault();
+            timer.remove();
+        });
+    });
 
     let main = document.getElementById("main");
     main.appendChild(container);

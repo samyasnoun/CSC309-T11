@@ -1,20 +1,23 @@
 :root{
   /* layout */
-  --header-h:70px;                 
-  --footer-h:3rem;                 
-  --edge:0.5rem;
-  --content-gap:128px;
-  --maxw:720px;
-  --input-border:#000000;
+   /* layout */
+  --header-h: 71px;                 
+  --footer-h: 48px;                 
+  --edge: 0.5rem;
+  --content-gap: 128px;
+  --maxw: 720px;
+  --input-border: #000000;
   
   /* colors */
-  /* --body-bg:inherit; */ /* CHANGED: replace inherited white with a dark (non-white) body background */
   --body-bg: #BBBBBB;    
   --text:    #333333;     
   --header-bg: #333333;   
   --footer-bg: #333333;   
   --link-on:  #B2F5EA;    
   --link-off: #00B8D4;    
+
+  /* button blue from Figma */
+  --btn-blue: #007EA8;
 }
 
 /* reset */
@@ -36,45 +39,45 @@ body.site{
 
 /* header */
 header, #header, .site-header {
-  height: 56px;                 
+  height: var(--header-h);                 
   width: 100%;
   background-color: var(--header-bg);
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  padding: 0 0.5rem;
+  padding: 0 16px;                 /* Figma: 16px gutter -> controls left start of “Home” */
   border: 0;
   box-sizing: border-box;
 }
 
-/* Some graders sample the nav instead of header; keep it black as well */
+/* nav lets the header background show through */
 .site-header > nav,
 nav,
 .navbar,
 .site-header .navbar,
 header nav,
 #header nav {
-  background-color: transparent;   /* let the header’s #333333 show through */
+  background-color: transparent;
 }
 
 /* nav links */
 .navbar ul{
   display:flex;
-  gap:2rem;          
-  list-style:none;
-  margin:0;
-  padding:0;
-  align-items:center;
-  justify-content:flex-start;
+  gap: 2rem;          
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  align-items: center;
+  justify-content: flex-start;
 }
 .navbar li{ margin:0; padding:0; }
 
 .navbar a{
   text-decoration: none;
-  font-size: 19.2px;   /* Figma shows 19.2px */
+  font-size: 19.2px;       /* Figma */
   font-weight: 400;
   margin: 0;
-  padding: 0;
+  padding: 16px;           /* Figma: link’s own padding (affects “Home” left spacing) */
   color: var(--link-off);  /* #00B8D4 */
 }
 .navbar a.current{
@@ -82,27 +85,28 @@ header nav,
   font-weight: 700;
 }
 .navbar a:hover{
-  color: #FFFFFF;          /* if your prototype shows white on hover */
+  color: #FFFFFF;
+  text-decoration: underline;  /* matches the hover mock */
 }
 
 /* 0.5rem side padding on text elements (keep) */
 h1,h2,h3,h4,h5,h6,p,li,summary,label,button{ padding-left:.5rem; padding-right:.5rem; }
 a{ padding-left:.5rem; padding-right:.5rem; }
-.site-header .navbar a{ padding-left:0; padding-right:0; }
+.site-header .navbar a{ padding-left:16px; padding-right:16px; } /* keep header link padding */
 
 /* mobile: remove extra padding (keep) */
 @media (max-width:480px){
   h1,h2,h3,h4,h5,h6,p,li,summary,label,button{ padding-left:0; padding-right:0; }
   a{ padding-left:0; padding-right:0; }
-  .site-header .navbar a{ padding-left:0; padding-right:0; }
+  .site-header .navbar a{ padding-left:16px; padding-right:16px; } /* maintain link padding on mobile */
 }
 
-/* footer */
+/* footer — match Figma */
 footer, #footer, .site-footer {
-  height: 19px;                     /* Figma: 19px */
+  height: var(--footer-h);
   width: 100%;
-  background-color: var(--footer-bg); /* #333333 from :root */
-  color: #FFFFFF;                   /* white text */
+  background-color: var(--footer-bg);
+  color: #FFFFFF;
   display: flex;
   align-items: center;              /* vertical center */
   justify-content: center;          /* horizontal center */
@@ -113,18 +117,18 @@ footer, #footer, .site-footer {
 
 /* main area */
 .site-main{
-  flex:1;
-  padding:128px var(--edge);  /* 128px top/bottom per spec */
+  flex: 1;
+  padding: 128px var(--edge);
 }
-.site-main > *{margin-left:auto;margin-right:auto;text-align:center}
-.center{margin-inline:auto}
-.max-720{width:100%;max-width:var(--maxw)}
-.stack{display:flex;flex-direction:column;align-items:stretch}
-.btn{align-self:center}
-.gap-24{gap:24px}
+.site-main > *{ margin-left:auto; margin-right:auto; text-align:center }
+.center{ margin-inline:auto }
+.max-720{ width:100%; max-width:var(--maxw) }
+.stack{ display:flex; flex-direction:column; align-items:stretch }
+.btn{ align-self:center }
+.gap-24{ gap:24px }
 
 /* portrait */
-.portrait-link{display:inline-block}
+.portrait-link{ display:inline-block }
 .portrait-frame{
   width:200px; 
   height:200px;                     
@@ -140,131 +144,120 @@ footer, #footer, .site-footer {
 }
 
 /* headings & paragraph (index/about) */
-.display{font-size:48px;margin:0 0 16px 0}
-.about-weight-700{font-weight:700}
-/* .lead{font-size:16px;margin:0 0 24px 0} */ /* CHANGED */
-.lead{font-size:18px;margin:0 0 24px 0}       /* CHANGED: Index paragraph = 18px */
+.display{ font-size:48px; margin:0 0 16px 0 }
+.about-weight-700{ font-weight:700 }
+.lead{
+  font-size: 24px;         /* Figma: 24px */
+  line-height: 24px;       /* 100% per Inspect */
+  margin: 0 0 24px 0;
+}
 
-/* button — base stays white, but text/border/radius/hover updated */
+/* button — white base, blue text/border; hover swaps per Figma (#007EA8) */
 .btn{
   width:126px;               
   height:40px;
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  background:#ffffff;        
-  /* color:#000000;              */ /* CHANGED */
-  color:#00b8d4;               /* CHANGED: text teal */
-  /* border:2px solid #000000;   */ /* CHANGED */
-  border:2px solid #00b8d4;    /* CHANGED: border teal */
-  /* border-radius:8px;          */ /* CHANGED */
-  border-radius:4px;            /* CHANGED: expected smaller radius */
+  background:#FFFFFF;
+  color: var(--btn-blue);               
+  border:2px solid var(--btn-blue);    
+  border-radius:4px;
   font-weight:700;
   text-decoration:none;
   cursor:pointer;
 }
 .btn:hover{
-  /* background:#00b8d4; color:#ffffff; border-color:#000000; */ /* CHANGED */
-  background:#000000;         /* CHANGED: hover BG black (tester expects non-teal) */
-  color:#ffffff;              /* keep white text on hover */
-  border-color:#000000;       /* border stays black on hover */
+  background: var(--btn-blue);  /* swap */
+  color:#FFFFFF;
+  border-color:#FFFFFF;         /* white stroke on hover */
 }
 
 /* about page spacing */
 .classes { margin: 0; }
-.classes>summary{font-size:18px;cursor:pointer}
-.classes>ul{margin-top:1rem;list-style:disc}
-.classes>ul li{font-size:18px}
-.centered-list{width:fit-content;margin-inline:auto}
-.padded-ack{padding-top:0.5rem;padding-bottom:0.5rem;margin-top:16px;margin-bottom:0;}
+.classes>summary{ font-size:18px; cursor:pointer }
+.classes>ul{ margin-top:1rem; list-style:disc }
+.classes>ul li{ font-size:18px }
+.centered-list{ width:fit-content; margin-inline:auto }
+.padded-ack{ padding-top:0.5rem; padding-bottom:0.5rem; margin-top:16px; margin-bottom:0; }
 .embed-wrap{
-  width:100%;max-width:var(--maxw);
+  width:100%; max-width:var(--maxw);
   margin-inline:auto;
   margin-top:16px;
   margin-bottom:128px;              
 }
-.pdf-embed{width:100%;height:60vh;display:block}
+.pdf-embed{ width:100%; height:60vh; display:block }
 
 /* contact email line */
-.email-line{margin:0 0 24px;text-align:center}
-/* .email{font-family:"Times New Roman",Times,serif;font-size:16px;font-weight:700} */ /* CHANGED */
-.email{font-family:"Times New Roman",Times,serif;font-size:18px;font-weight:700}       /* CHANGED: Contact email font size */
+.email-line{ margin:0 0 24px; text-align:center }
+.email{ font-family:"Times New Roman",Times,serif; font-size:18px; font-weight:700 }
 
 /* form layout */
 .feedback-form{
-  display:flex;flex-direction:column;
-  width:100%;max-width:var(--maxw);
+  display:flex; flex-direction:column;
+  width:100%; max-width:var(--maxw);
   margin-left:0; margin-right:0;
-  /* gap:0; */                            /* CHANGED */
-  gap:0;                                  /* keep 0 here; row spacing set below */
+  gap:0;                                  /* row spacing set below */
   margin-top:0;
   margin-bottom:64px;
 }
 
 /* field rows */
 .field{
-  display:flex;flex-direction:row;align-items:center;column-gap:16px;width:100%;
-  /* margin-bottom: 16px; */              /* CHANGED: unify spacing using consistent rules below */
-  margin-bottom:32px;                     /* CHANGED: 32px between “rows” to satisfy label spacing tests */
+  display:flex; flex-direction:row; align-items:center; column-gap:16px; width:100%;
+  margin-bottom:32px;                     /* 32px between rows */
 }
 .feedback-form label{
-  font-size:16px;font-weight:700;text-align:right;padding:0;margin:0;min-width:140px;flex-shrink:0
+  font-size:16px; font-weight:700; text-align:right; padding:0; margin:0; min-width:140px; flex-shrink:0
 }
 
-/* inputs: full width; border color/radius updated */
+/* inputs */
 .box{
   width:100%;
   padding:0.8rem;
-  /* border:1px solid #000000; */         /* CHANGED */
-  border:1px solid #00b8d4;               /* CHANGED: teal border expected by tester */
-  /* border-radius:8px;          */        /* CHANGED */
-  border-radius:4px;                       /* CHANGED: smaller radius expected */
+  border:1px solid #00B8D4;
+  border-radius:4px;
   background:#fff;
 }
 
-/* consent row: align to inputs and set exact gaps */
+/* consent row */
 .checkbox-row{
-  display:flex;flex-direction:row;align-items:center;column-gap:8px;
+  display:flex; flex-direction:row; align-items:center; column-gap:8px;
   justify-content:flex-start;
-  /* margin-left:156px; */                /* CHANGED: let it naturally align under inputs */
-  margin-left:0;                          /* CHANGED */
+  margin-left:0;
   margin-top:0;
-  margin-bottom:32px;                     /* keep 32px before button */
+  margin-bottom:32px;
 }
-.checkbox-row input[type="checkbox"]{transform:scale(1.5);transform-origin:left center;margin:0;padding:0}
-.checkbox-row label{ text-align:left;padding:0;margin:0;margin-left:8px; }
+.checkbox-row input[type="checkbox"]{ transform:scale(1.5); transform-origin:left center; margin:0; padding:0 }
+.checkbox-row label{ text-align:left; padding:0; margin:0; margin-left:8px; }
 
-/* place the submit button left-aligned with inputs on desktop */
+/* submit button alignment */
 .feedback-form .btn{
   align-self:flex-start;
-  /* margin-left:156px; */                /* CHANGED: align with form’s left edge for consistent “left” checks */
-  margin-left:0;                          /* CHANGED */
+  margin-left:0;
   width:142px;
   margin-top:0;
 }
 
 /* desktop exact input width */
 @media (min-width: 800px){
-    .box{ width:609px; }                    
+  .box{ width:609px; }
 }
 
-/* responsive ≤ 480px - stack labels; keep small, exact gaps */
+/* responsive ≤ 480px */
 @media (max-width:480px){
-  .field{flex-direction:column;align-items:flex-start;row-gap:8px}
-  .feedback-form label{text-align:left;min-width:auto}
+  .field{ flex-direction:column; align-items:flex-start; row-gap:8px }
+  .feedback-form label{ text-align:left; min-width:auto }
 
   .checkbox-row{
-    flex-direction:row;column-gap:8px;align-items:center;justify-content:flex-start;
-    margin-left:0;           /* keep aligned left */
-    margin-top:8px;          /* CHANGED: to help the “8px” spacing between consent input and text */
-    margin-bottom:32px;      /* keep */
+    flex-direction:row; column-gap:8px; align-items:center; justify-content:flex-start;
+    margin-left:0;
+    margin-top:8px;
+    margin-bottom:32px;
   }
   .checkbox-row input[type="checkbox"]{ margin:0; }
   .checkbox-row label{ margin:0; text-align:left; }
 
   .feedback-form .btn{ align-self:flex-start; margin-left:0; }
-  
   .feedback-form{ gap:0; }
-  /* Each field already has 32px bottom margin; mobile checks measure different pairs,
-     so keep label/input row-gap:8px above and use margins here exactly. */
 }

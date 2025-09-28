@@ -350,6 +350,29 @@ footer,#footer,.site-footer{
 /* FINAL PATCH: Desktop email-input → feedback-input gap = 16px exactly */
 @media (min-width: 481px){
   .feedback-form .field:nth-of-type(2) .box{
-    margin-top: 23.6px !important; /* 8.4 + 7.6 = 16.0 */
+    margin-top: 7.6px !important; /* 8.4 + 7.6 = 16.0 */
   }
+}
+
+
+/* FINAL DESKTOP SYNC: make inputs = 16px and labels = 32px without breaking others */
+@media (min-width: 481px){
+  /* kill the extra child margin that was inflating the label gap */
+  .feedback-form .email{ margin-bottom: 0 !important; }
+
+  /* normalize the 2nd row position (override any earlier tweaks) */
+  .feedback-form .field:nth-of-type(2){ margin-top: 0 !important; }
+
+  /* inputs: 16px gap via row shift */
+  .field.email{ margin-bottom: 0 !important; }
+  .field.feedback{ margin-top: 16px !important; }
+
+  /* labels: add +16px only to the Feedback label to reach 32px total */
+  .field.feedback > label{ margin-top: 16px !important; }
+
+  /* ensure the feedback input itself doesn’t add/subtract extra offset */
+  .feedback-form .field:nth-of-type(2) .box{ margin-top: 0 !important; }
+
+  /* no hidden label nudge anywhere */
+  .feedback-form .field + .field > label{ margin-top: 0 !important; }
 }

@@ -99,15 +99,16 @@ a{ padding-left:.5rem; padding-right:.5rem; }
 
 /* footer */
 footer, #footer, .site-footer {
-  height:3rem; 
-  width:100%;
-  background-color:#000000;  /* solid black so grader finds it */
-  color:#ffffff;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding-left:var(--edge);
-  padding-right:var(--edge);
+  height: 19px;                     /* Figma: 19px */
+  width: 100%;
+  background-color: var(--footer-bg); /* #333333 from :root */
+  color: #FFFFFF;                   /* white text */
+  display: flex;
+  align-items: center;              /* vertical center */
+  justify-content: center;          /* horizontal center */
+  padding: 0;                       /* keep exact measured height */
+  border: 0;
+  box-sizing: border-box;
 }
 
 /* main area */

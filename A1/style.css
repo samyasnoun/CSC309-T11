@@ -277,3 +277,53 @@ footer,#footer,.site-footer{
 
 /* Never let hidden nudges stack */
 .feedback-form .field + .field > label { margin-top:0 !important; }
+
+/* ===== A1 FIX PATCH (append at end of style.css) ===== */
+
+/* 1) DESKTOP: “Your Email” ↔ “Feedback” labels must be 32px exactly.
+      Use the field containers, not the generic `.email` class. */
+      @media (min-width:481px){
+        .feedback-form .field + .field > label{ margin-top:0 !important; } /* no hidden nudge */
+        .field.email{ margin-bottom:0 !important; }  /* email row contributes 0 */
+        .field.feedback{ margin-top:32px !important; } /* set the full 32px here */
+      }
+      
+      /* 2) DESKTOP: Attachment input ↔ Agree text = 32px measured to the LABEL top.
+            Make the label’s top align with the row’s top; keep the row’s margin-top=32px. */
+      @media (min-width:481px){
+        .checkbox-row{
+          align-items:flex-start !important;    /* label top = row top */
+          margin-top:32px !important;           /* keeps Attachments→Agree Text at 32px */
+        }
+      }
+      
+      /* 3) DESKTOP: Consent input/label horizontal spacing must read as 18px visually.
+            The checkbox is scaled (20→ from ~13), which visually “eats” ~7px of gap.
+            Compensate by adding 7px to the label’s left margin. */
+      @media (min-width:481px){
+        .checkbox-row label{ margin-left:7px !important; }  /* 18px visual gap */
+      }
+      
+      /* 4) MOBILE (≤480px): 
+            a) Attachment input ↔ Consent input spacing must be 16px visually.
+               Transform scaling lifts the checkbox ~3–4px into that gap; add top margin.
+            b) Consent input ↔ Agree text spacing must be 8px visually.
+               Give the checkbox an extra bottom margin to counter the transform. */
+      @media (max-width:480px){
+        .field.attachment{ margin-bottom:16px !important; }   /* required base gap */
+        .checkbox-row{ 
+          margin-top:4px !important;      /* +~4px to offset transform overlap → visual 16px */
+          row-gap:0 !important;           /* we’ll control the next gap via margin */
+        }
+        .checkbox-row input[type="checkbox"]{
+          /* keep scale (needed for the “Transform” test), then add margin to reach visual 8px */
+          margin-bottom:11px !important;  /* 11px bottom margin ≈ visual 8px after scale */
+        }
+      }
+      
+      /* 5) CONSENT SIZE (all viewports): must be 20×20 via transform.
+            Keep scale and origin; no width/height to avoid layout box conflicts. */
+      .checkbox-row input[type="checkbox"]{
+        transform:scale(1.5) !important;
+        transform-origin:left center !important;
+      }

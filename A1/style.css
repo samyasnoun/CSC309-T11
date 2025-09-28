@@ -37,7 +37,7 @@ header, #header, .site-header {
   justify-content: flex-start;
   border: 0;
   box-sizing: border-box;
-  padding-left: 16px; 
+  padding-left: 8px;
 }
 
 .site-header > nav,
@@ -51,7 +51,7 @@ header nav,
 
 .navbar ul{
   display:flex;
-  gap: 0;          
+  gap: 0;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -63,24 +63,22 @@ header nav,
 
 .navbar a{
   text-decoration: none;
-  font-size: 19.2px;      
+  font-size: 19.2px;
   font-weight: 400;
   margin: 0;
-  padding: 16px 0;           
-  color: var(--link-off);  
+  padding: 16px 0;
+  color: var(--link-off);
 }
 .navbar a.current{
-  color: var(--link-on);   
+  color: var(--link-on);
   font-weight: 700;
 }
 .navbar a:hover{
   color: #FFFFFF;
-  text-decoration: underline;  
+  text-decoration: underline;
 }
 
-.navbar li:first-child a {
-  padding-left: 0;
-}
+.navbar li:first-child a { padding-left: 0; }
 
 h1,h2,h3,h4,h5,h6,p,li,summary,label,button{ padding-left:.5rem; padding-right:.5rem; }
 a{ padding-left:.5rem; padding-right:.5rem; }
@@ -98,9 +96,9 @@ footer, #footer, .site-footer {
   background-color: var(--footer-bg);
   color: #FFFFFF;
   display: flex;
-  align-items: center;              
-  justify-content: center;         
-  padding: 0;                       
+  align-items: center;
+  justify-content: center;
+  padding: 0;
   border: 0;
   box-sizing: border-box;
 }
@@ -118,11 +116,11 @@ footer, #footer, .site-footer {
 
 .portrait-link{ display:inline-block }
 .portrait-frame{
-  width:200px; 
-  height:200px;                     
-  border-radius:50%;  
-  overflow:hidden;            
-  margin:0px auto 32px auto;        
+  width:200px;
+  height:200px;
+  border-radius:50%;
+  overflow:hidden;
+  margin:0px auto 32px auto;
 }
 .portrait-img{
   width:100%;
@@ -134,29 +132,29 @@ footer, #footer, .site-footer {
 .display{ font-size:48px; margin:0 0 16px 0 }
 .about-weight-700{ font-weight:700 }
 .lead{
-  font-size: 24px;        
-  line-height: 24px;      
+  font-size: 24px;
+  line-height: 24px;
   margin: 0 0 24px 0;
 }
 
 .btn{
-  width:126px;               
+  width:126px;
   height:40px;
   display:inline-flex;
   align-items:center;
   justify-content:center;
   background:#FFFFFF;
-  color: var(--btn-blue);               
-  border:2px solid var(--btn-blue);    
+  color: var(--btn-blue);
+  border:2px solid var(--btn-blue);
   border-radius:4px;
   font-weight:700;
   text-decoration:none;
   cursor:pointer;
 }
 .btn:hover{
-  background: var(--btn-blue);  
+  background: var(--btn-blue);
   color:#FFFFFF;
-  border-color:#FFFFFF;         
+  border-color:#FFFFFF;
 }
 
 .classes { margin: 0; }
@@ -169,7 +167,7 @@ footer, #footer, .site-footer {
   width:100%; max-width:var(--maxw);
   margin-inline:auto;
   margin-top:16px;
-  margin-bottom:0;              
+  margin-bottom:0;
 }
 .pdf-embed{ width:100%; height:60vh; display:block }
 
@@ -185,18 +183,18 @@ footer, #footer, .site-footer {
   display:flex; flex-direction:column;
   width:100%; max-width:var(--maxw);
   margin-left:0; margin-right:0;
-  gap:0;                                  
+  gap:0;
   margin-top:0;
   margin-bottom:0;
 }
 
 .field{
-  display:flex; 
-  flex-direction:row; 
-  align-items:center; 
-  column-gap:16px; 
+  display:flex;
+  flex-direction:row;
+  align-items:center;
+  column-gap:16px;
   width:100%;
-  margin-bottom:32px;                     
+  margin-bottom:16px;
 }
 
 .field + .field > label { margin-top:0; }
@@ -215,12 +213,12 @@ footer, #footer, .site-footer {
 }
 
 .checkbox-row{
-  display:flex; 
-  flex-direction:row; 
-  align-items:center; 
+  display:flex;
+  flex-direction:row;
+  align-items:center;
   column-gap:18px;
   justify-content:flex-start;
-  margin-left:156px;
+  margin-left:0;
   margin-top:0;
   margin-bottom:32px;
 }
@@ -242,7 +240,15 @@ footer, #footer, .site-footer {
   .field{ flex-direction:column; align-items:flex-start; row-gap:8px; margin-bottom:16px; }
   .feedback-form label{ text-align:left; min-width:auto }
   .field + .field > label{ margin-top:0; }
-  .checkbox-row{ flex-direction:row; column-gap:8px; align-items:center; justify-content:flex-start; margin-left:0; margin-top:0; margin-bottom:32px; }
+  .checkbox-row{
+    flex-direction:column;
+    align-items:flex-start;
+    row-gap:8px;
+    column-gap:0;
+    margin-left:0;
+    margin-top:0;
+    margin-bottom:32px;
+  }
   .checkbox-row input[type="checkbox"]{ margin:0; }
   .checkbox-row label{ margin:0; text-align:left; }
   .feedback-form .btn{ align-self:flex-start; margin-left:0; }

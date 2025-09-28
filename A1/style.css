@@ -37,7 +37,6 @@ header, #header, .site-header {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  padding-left: 32px;                 
   border: 0;
   box-sizing: border-box;
 }
@@ -78,6 +77,10 @@ header nav,
 .navbar a:hover{
   color: #FFFFFF;
   text-decoration: underline;  
+}
+
+.navbar li:first-child a {
+  padding-left: 12px;  
 }
 
 h1,h2,h3,h4,h5,h6,p,li,summary,label,button{ padding-left:.5rem; padding-right:.5rem; }

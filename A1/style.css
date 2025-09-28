@@ -37,7 +37,7 @@ header, #header, .site-header {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  padding-left: 32px;                 
+  padding-left: 12px;                 
   border: 0;
   box-sizing: border-box;
 }

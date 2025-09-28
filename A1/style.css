@@ -259,3 +259,37 @@ footer,#footer,.site-footer{
 
 /* Never let hidden nudges stack unexpectedly */
 .feedback-form .field + .field > label { margin-top:0.125rem; } /* ≈2px, harmless */
+
+/* ========= A1 FINAL PATCH (append at end of style.css) ========= */
+
+/* 1) DESKTOP: "Your Email" LABEL → "Feedback" LABEL = 32px
+      Observed 46px (too large by 14px). Pull the whole 2nd field up by 14px.
+   2) DESKTOP: Email INPUT → Feedback INPUT = 16px
+      Observed 21.4px (too large by 5.4px). Push the feedback input down by 8.6px
+      (net change: -14 + 8.6 = -5.4), giving the exact 16px. */
+      @media (min-width: 481px){
+        .feedback-form .field:nth-of-type(2){
+          margin-top: -14px !important;              /* fixes label→label to 32px */
+        }
+        .feedback-form .field:nth-of-type(2) .box{
+          margin-top: 8.6px !important;              /* fixes input→input to 16px */
+        }
+      }
+      
+      /* 3) DESKTOP: Consent input/label horizontal spacing = 18px
+            Observed 11px (short by 7px). Add 7px to the label. */
+      @media (min-width: 481px){
+        .checkbox-row label{ margin-left: 7px !important; }
+      }
+      
+      /* 4) MOBILE: Email INPUT → Feedback LABEL = 16px
+            Observed 18.4px (too large by 2.4px). Reduce the gap after the first field. */
+      @media (max-width: 480px){
+        .feedback-form .field:nth-of-type(1){ margin-bottom: 13.6px !important; }
+      }
+      
+      /* 5) MOBILE: Attachment INPUT → Consent INPUT = 16px
+            Observed 12.4px (short by 3.6px). Add 3.6px above the consent row. */
+      @media (max-width: 480px){
+        .checkbox-row{ margin-top: 3.6px !important; }
+      }

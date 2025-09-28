@@ -185,7 +185,7 @@ footer,#footer,.site-footer{
   margin:0;
 }
 
-.feedback-form .field:nth-of-type(2) .box{ margin-top:-6px; }
+.feedback-form .field:nth-of-type(2) .box{ margin-top:-0.4px; }
 
 /* Consent row (desktop) */
 .checkbox-row{

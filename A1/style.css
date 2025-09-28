@@ -44,7 +44,7 @@ header,#header,.site-header{
   justify-content:flex-start;
 }
 .navbar li{margin:0;padding:0}
-.navbar li+li{margin-left:32px}
+.navbar li+li{margin-left:24px}
 
 .navbar a{
   text-decoration:none;

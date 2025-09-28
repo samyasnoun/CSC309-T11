@@ -376,3 +376,19 @@ footer,#footer,.site-footer{
   /* no hidden label nudge anywhere */
   .feedback-form .field + .field > label{ margin-top: 0 !important; }
 }
+
+/* ==== A1 FINAL DESKTOP LOCK (puts both gaps right) ==== */
+@media (min-width: 481px){
+  /* kill any earlier ‘email’ row extra margin in the form */
+  .feedback-form .email { margin-bottom: 0 !important; }
+
+  /* remove hidden 2px label nudge between rows */
+  .feedback-form .field + .field > label { margin-top: 0 !important; }
+
+  /* LABEL→LABEL: 32px total = 16px row offset + 16px label top margin */
+  .field.feedback { margin-top: 16px !important; }
+  .field.feedback > label { margin-top: 16px !important; }
+
+  /* INPUT→INPUT: add 7.6px so 8.4px native offset + 7.6px = 16.0px */
+  .field.feedback .box { margin-top: 7.6px !important; }
+}

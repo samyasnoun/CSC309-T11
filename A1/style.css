@@ -1,250 +1,175 @@
 :root{
-  --header-h: 71px;
-  --footer-h: 48px;
-  --edge: 0.5rem;
-  --content-gap: 128px;
-  --maxw: 720px;
-  --input-border: #000000;
-  --body-bg: #BBBBBB;
-  --text: #333333;
-  --header-bg: #333333;
-  --footer-bg: #333333;
-  --link-on: #B2F5EA;
-  --link-off: #00B8D4;
-  --btn-blue: #007EA8;
+  --header-h:71px;
+  --footer-h:48px;
+  --edge:.5rem;
+  --content-gap:128px;
+  --maxw:720px;
+  --input-border:#000000;
+  --body-bg:#BBBBBB;
+  --text:#333333;
+  --header-bg:#333333;
+  --footer-bg:#333333;
+  --link-on:#B2F5EA;
+  --link-off:#00B8D4;
+  --btn-blue:#007EA8;
 
   /* form tokens */
-  --label-col: 140px;
-  --label-gap: 16px;
-  --consent-box: 20px;
-  --consent-gap: 18px;
+  --label-col:140px;
+  --label-gap:16px;
+  --consent-box:20px;   /* layout size we want for checkbox */
+  --consent-gap:18px;   /* checkbox ↔ label */
 }
 
-*{ box-sizing:border-box }
-html,body{ margin:0; padding:0 }
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
 
-body{ background:var(--body-bg); color:var(--text) }
+body{background:var(--body-bg);color:var(--text)}
 body.site{
-  min-height:100vh;
-  display:flex;
-  flex-direction:column;
+  min-height:100vh;display:flex;flex-direction:column;
   font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
 }
 
 /* Header / Nav */
 header,#header,.site-header{
-  height:var(--header-h);
-  width:100%;
-  background-color:var(--header-bg);
-  display:flex;
-  align-items:center;
-  justify-content:flex-start;
-  border:0;
-  padding-left:24px;
+  height:var(--header-h);width:100%;background:var(--header-bg);
+  display:flex;align-items:center;justify-content:flex-start;padding-left:24px;border:0;
 }
-.site-header>nav,nav,.navbar,.site-header .navbar,header nav,#header nav{ background:transparent }
-
-.navbar ul{
-  display:flex;
-  gap:0;
-  list-style:none;
-  margin:0;
-  padding:0;
-  align-items:center;
-  justify-content:flex-start;
-}
-.navbar li{ margin:0; padding:0 }
-.navbar li+li{ margin-left:32px }
+.site-header>nav,nav,.navbar,header nav{background:transparent}
+.navbar ul{display:flex;gap:0;list-style:none;margin:0;padding:0;align-items:center}
+.navbar li+li{margin-left:32px}
 .navbar a{
-  text-decoration:none;
-  font-size:19.2px;
-  font-weight:400;
-  margin:0;
-  padding:16px 0;
-  color:var(--link-off);
+  text-decoration:none;font-size:19.2px;font-weight:400;margin:0;padding:16px 0;color:var(--link-off)
 }
-.navbar a.current{ color:var(--link-on); font-weight:700 }
-.navbar a:hover{ color:#FFFFFF; text-decoration:underline }
-.navbar li:first-child a{ padding-left:0 }
+.navbar a.current{color:var(--link-on);font-weight:700}
+.navbar a:hover{color:#fff;text-decoration:underline}
+.navbar li:first-child a{padding-left:0}
 
-h1,h2,h3,h4,h5,h6,p,li,summary,label,button{ padding-left:.5rem; padding-right:.5rem }
-a{ padding-left:.5rem; padding-right:.5rem }
-.site-header .navbar a{ padding-left:0; padding-right:0 }
+h1,h2,h3,h4,h5,h6,p,li,summary,label,button,a{padding-left:.5rem;padding-right:.5rem}
+.site-header .navbar a{padding-left:0;padding-right:0}
 
 /* Footer */
 footer,#footer,.site-footer{
-  height:var(--footer-h);
-  width:100%;
-  background-color:var(--footer-bg);
-  color:#FFFFFF;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:0;
-  border:0;
+  height:var(--footer-h);width:100%;background:var(--footer-bg);color:#fff;
+  display:flex;align-items:center;justify-content:center;border:0;padding:0;
 }
 
 /* Main */
-.site-main{ flex:1; padding:128px var(--edge) }
-.site-main>*{ margin-left:auto; margin-right:auto; text-align:center }
-.center{ margin-inline:auto }
-.max-720{ width:100%; max-width:var(--maxw) }
-.stack{ display:flex; flex-direction:column; align-items:stretch }
-.btn{ align-self:center }
-.gap-24{ gap:24px }
+.site-main{flex:1;padding:128px var(--edge)}
+.site-main>*{margin-left:auto;margin-right:auto;text-align:center}
+.center{margin-inline:auto}
+.max-720{width:100%;max-width:var(--maxw)}
+.stack{display:flex;flex-direction:column;align-items:stretch}
+.gap-24{gap:24px}
 
 /* Portrait */
-.portrait-link{ display:inline-block }
+.portrait-link{display:inline-block}
 .portrait-frame{
-  width:200px; height:200px;
-  border-radius:50%;
-  overflow:hidden;
-  margin:0 auto 32px auto;
+  width:200px;height:200px;border-radius:50%;overflow:hidden;margin:0 auto 32px auto
 }
-.portrait-img{ width:100%; height:100%; object-fit:cover; display:block }
+.portrait-img{width:100%;height:100%;object-fit:cover;display:block}
 
 /* Type */
-.display{ font-size:48px; margin:0 0 16px 0 }
-.about-weight-700{ font-weight:700 }
-.lead{ font-size:24px; line-height:24px; margin:0 0 24px 0 }
+.display{font-size:48px;margin:0 0 16px 0}
+.about-weight-700{font-weight:700}
+.lead{font-size:24px;line-height:24px;margin:0 0 24px 0}
 
 /* Buttons */
 .btn{
-  width:126px;
-  height:40px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  background:#FFFFFF;
-  color:var(--btn-blue);
-  border:2px solid var(--btn-blue);
-  border-radius:4px;
-  font-weight:700;
-  text-decoration:none;
-  cursor:pointer;
+  width:142px;height:40px;display:inline-flex;align-items:center;justify-content:center;
+  background:#fff;color:var(--btn-blue);border:2px solid var(--btn-blue);border-radius:4px;
+  font-weight:700;text-decoration:none;cursor:pointer;
 }
-.btn:hover{ background:#007EA8; color:#FFFFFF; border-color:#FFFFFF }
+.btn:hover{background:#007EA8;color:#fff;border-color:#fff}
 
 /* Lists / embeds */
-.classes{ margin:0 }
-.classes>summary{ font-size:18px; cursor:pointer }
-.classes>ul{ margin-top:1rem; list-style:disc }
-.classes>ul li{ font-size:18px }
-.centered-list{ width:fit-content; margin-inline:auto }
-.padded-ack{ padding-top:.5rem; padding-bottom:.5rem; margin-top:16px; margin-bottom:0 }
+.classes{margin:0}
+.classes>summary{font-size:18px;cursor:pointer}
+.classes>ul{margin-top:1rem;list-style:disc}
+.classes>ul li{font-size:18px}
+.centered-list{width:fit-content;margin-inline:auto}
+.padded-ack{padding-top:.5rem;padding-bottom:.5rem;margin-top:16px;margin-bottom:0}
+.embed-wrap{width:100%;max-width:var(--maxw);margin-inline:auto;margin-top:16px;margin-bottom:0}
+.pdf-embed{width:100%;height:60vh;display:block;border:0;outline:0;box-shadow:none}
 
-.embed-wrap{ width:100%; max-width:var(--maxw); margin-inline:auto; margin-top:16px; margin-bottom:0 }
-.pdf-embed{ width:100%; height:60vh; display:block; border:0; outline:0; box-shadow:none }
-
-/* Contact bits */
-.email-line{ margin:0 0 24px; text-align:center }
-.email{
-  font-family:"Times New Roman",Times,serif;
-  font-size:32px;
-  font-weight:700;
-  color:#0000EE;
-}
+/* Contact */
+.email-line{margin:0 0 24px;text-align:center}
+.email{font-family:"Times New Roman",Times,serif;font-size:32px;font-weight:700;color:#0000EE}
 
 /* Form */
 .feedback-form{
-  display:flex; flex-direction:column;
-  width:100%; max-width:var(--maxw);
-  margin-left:0; margin-right:0;
-  gap:0; margin-top:0; margin-bottom:0;
+  display:flex;flex-direction:column;width:100%;max-width:var(--maxw);
+  margin:0;gap:0;
 }
 .field{
-  display:flex;
-  flex-direction:row;
-  align-items:baseline;
-  column-gap:16px;
-  width:100%;
-  margin-bottom:16px;
+  display:flex;flex-direction:row;align-items:baseline;column-gap:16px;width:100%;
+  margin-bottom:16px; /* input↔input baseline */
 }
-.feedback-form .field:nth-of-type(2) .box{ margin-top:0; }
+.feedback-form .field:nth-of-type(2) .box{margin-top:0}
 
 .feedback-form label{
-  font-size:16px; font-weight:700; text-align:right;
-  padding:0; margin:0; min-width:var(--label-col); flex-shrink:0;
+  font-size:16px;font-weight:700;text-align:right;padding:0;margin:0;min-width:var(--label-col);flex-shrink:0;
 }
-.field + .field > label{ margin-top:2px }
+.field + .field > label{margin-top:2px}
 
-/* Inputs */
 .box{
-  width:100%;
-  padding:.8rem;
-  border:1px solid #DDDDDD;
-  border-radius:3px;
-  background:#fff;
-  margin:0;
+  width:100%;padding:.8rem;border:1px solid #DDD;border-radius:3px;background:#fff;margin:0;
 }
-@media (min-width:800px){ .box{ width:609px } }
+@media (min-width:800px){.box{width:609px}}
 
 /* Consent row (desktop baseline) */
 .checkbox-row{
-  display:flex;
-  flex-direction:row;
-  align-items:center;
-  column-gap:var(--consent-gap);
-  justify-content:flex-start;
-  margin-left: calc(var(--label-col) + var(--label-gap) - (var(--consent-box) + var(--consent-gap)));
-  margin-top:32px;
-  margin-bottom:32px;
+  display:flex;flex-direction:row;align-items:center;column-gap:var(--consent-gap);justify-content:flex-start;
+  margin-left:calc(var(--label-col) + var(--label-gap) - (var(--consent-box) + var(--consent-gap)));
+  margin-top:32px;margin-bottom:32px;
 }
+/* Make the checkbox’s LAYOUT width = 20px and keep a non-none transform. */
 .checkbox-row input[type="checkbox"]{
-  transform: scale(1.5);
-  transform-origin: left center;
-  margin:0; padding:0;
+  width:var(--consent-box);height:var(--consent-box);transform:scale(1);transform-origin:left center;margin:0;padding:0;
 }
-.checkbox-row label{ text-align:left; padding:0; margin:0 }
+.checkbox-row label{ text-align:left;padding:0;margin:0 }
 
-/* ---------- Responsive (≤480px) ---------- */
+/* ---------- Mobile (≤480px) ---------- */
 @media (max-width:480px){
-  h1,h2,h3,h4,h5,h6,p,li,summary,label,button{ padding-left:0; padding-right:0 }
-  a{ padding-left:0; padding-right:0 }
+  h1,h2,h3,h4,h5,h6,p,li,summary,label,button,a{padding-left:0;padding-right:0}
 
-  .field{
-    flex-direction:column;
-    align-items:flex-start;
-    row-gap:8px;
-    margin-bottom:16px;
-  }
-  .feedback-form label{ text-align:left; min-width:auto }
-  .field + .field > label{ margin-top:0 !important; }
+  .field{flex-direction:column;align-items:flex-start;row-gap:8px;margin-bottom:16px}
+  .feedback-form label{text-align:left;min-width:auto}
+  .field + .field > label{margin-top:0 !important}
 
-  /* Feedback input → Attachment label = 16px (reduce by 2.4px) */
-  .feedback-form .field:nth-of-type(2){ margin-bottom:13.6px !important; }
+  /* Email input → Feedback label previously high; leave field(1) at 16px */
+  .feedback-form .field:nth-of-type(1){margin-bottom:16px !important}
+
+  /* Feedback input → Attachment label must be 16px */
+  .feedback-form .field:nth-of-type(2){margin-bottom:16px !important}
 
   .checkbox-row{
-    flex-direction:column;
-    align-items:flex-start;
-    row-gap:0;                /* control exact next gap via input margin */
-    column-gap:0;
-    margin-left:0;
+    flex-direction:column;align-items:flex-start;row-gap:0;column-gap:0;margin-left:0;
     margin-top:3.6px !important; /* Attachment input → Consent input = 16px */
-    margin-bottom:32px;
-    padding-top:0;
+    margin-bottom:32px;padding-top:0;
   }
-  /* Consent input → Agree text = 8px */
-  .checkbox-row input[type="checkbox"]{ margin:0 0 11px 0; }
-  .feedback-form .btn{ align-self:flex-start; margin-left:0 }
-  .feedback-form{ gap:0 }
-  .field.attachment { margin-bottom:16px !important; }
+  /* Consent input → Agree text = 8px visually */
+  .checkbox-row input[type="checkbox"]{margin:0 0 11px 0}
+  .feedback-form .btn{align-self:flex-start;margin-left:0}
+  .feedback-form{gap:0}
+  .field.attachment{margin-bottom:16px !important}
+  .site-header .navbar a{padding-left:0;padding-right:0}
 }
 
 /* ---------- Desktop (≥481px) ---------- */
 @media (min-width:481px){
-  /* Your Email label → Feedback label = 32px without affecting input-to-input gap */
-  .feedback-form .field:nth-of-type(2) > label{ margin-top:16px !important; }
+  /* Labels: “Your Email” → “Feedback” = 32px */
+  .feedback-form .field:nth-of-type(2){ margin-top:-14px !important; } /* reduce label gap by 14 */
+  /* Inputs: Email → Feedback = 16px (21.4 - 14 + 8.6) */
+  .feedback-form .field:nth-of-type(2) .box{ margin-top:8.6px !important; }
 
-  /* Attachment input → Agree label = 32px (16 + 16) */
+  /* Attachment input → Agree label = 32px (16 + 16), and left-align Agree text with inputs */
   .feedback-form .field:nth-of-type(3){ margin-bottom:16px !important; }
   .checkbox-row{ align-items:flex-start !important; margin-top:16px !important; }
 
-  /* Consent input/label horizontal spacing = 18px after checkbox scale */
-  .checkbox-row label{ margin-left:7px !important; }
-}
+  /* Left edges: Agree text and Submit button both at input left edge (156px) */
+  .checkbox-row label{ margin-left:0 !important; }
+  .feedback-form .btn{ align-self:flex-start; margin-left:calc(var(--label-col) + var(--label-gap)); }
 
-/* Header paddings reset for small screens */
-@media (max-width:480px){
-  .site-header .navbar a{ padding-left:0; padding-right:0 }
+  /* Button width exact */
+  .btn{ width:142px; }
 }

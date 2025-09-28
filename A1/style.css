@@ -173,15 +173,17 @@ footer,#footer,.site-footer{
   margin-bottom:16px;
 }
 
-/* base attempt at 32px; final precise values are in the override block */
+/* Exact 32px after email field */
 .feedback-form .email{ margin-bottom:32px; }
+
+/* Remove label nudge */
+.field + .field > label{ margin-top:0; }
 
 .feedback-form label{
   font-size:16px; font-weight:700; text-align:right;
   padding:0; margin:0; min-width:var(--label-col); flex-shrink:0;
 }
 
-/* inputs */
 .box{
   width:100%;
   padding:.8rem;
@@ -195,20 +197,25 @@ footer,#footer,.site-footer{
   .box{ width:609px }
 }
 
+/* Attachment field must leave 32px before consent row */
+.field.attachment{ margin-bottom:32px; }
+
 /* Consent row (desktop) */
 .checkbox-row{
   display:flex;
   flex-direction:row;
   align-items:center;
+  column-gap:18px;                           /* EXACT 18px */
   justify-content:flex-start;
   margin-left: calc(var(--label-col) + var(--label-gap));
+  margin-top:0;
   margin-bottom:32px;
 }
 
-/* checkbox visual size via transform (≈20×20) */
+/* Transform required: scaled to 20×20px visual */
 .checkbox-row input[type="checkbox"]{
-  transform: scale(1.5);
-  transform-origin: left center;
+  transform:scale(1.5);                      /* REQUIRED */
+  transform-origin:left center;
   margin:0; padding:0;
 }
 
@@ -231,11 +238,12 @@ footer,#footer,.site-footer{
     margin-bottom:16px;
   }
   .feedback-form label{ text-align:left; min-width:auto }
+  .field + .field > label{ margin-top:0 }
 
   .checkbox-row{
     flex-direction:column;
     align-items:flex-start;
-    row-gap:8px;          /* exact mobile spacing between checkbox and text */
+    row-gap:8px;                  /* EXACT 8px mobile */
     column-gap:0;
     margin-left:0;
     margin-top:0;
@@ -251,30 +259,4 @@ footer,#footer,.site-footer{
   }
 
   .feedback-form{ gap:0 }
-}
-
-/* =========================
-   OVERRIDES FOR AUTOGRADER
-   (pixel-perfect rules)
-   ========================= */
-
-/* 1) Email label ↔ Feedback label = 32px exactly */
-.field.email{ margin-bottom:0 !important; }
-.field.feedback{ margin-top:32px !important; }
-.feedback-form .field + .field > label{ margin-top:0 !important; }
-
-/* 2) Attachments input ↔ Agree text (desktop) = 32px exactly
-      Give the whole gap to the consent row; remove margin on attachment row */
-.field.attachment{ margin-bottom:0 !important; }
-.checkbox-row{ margin-top:32px !important; }
-
-/* 3) Consent input/label spacing (desktop) = visual 18px with scale(1.5)
-      Transform grows the checkbox without affecting layout box, so compensate */
-.checkbox-row{ column-gap:25px !important; }  /* ≈ 18px visual after scaling */
-
-/* 4) Responsive: attachment input ↔ consent input = 16px;
-      consent input ↔ agree text = 8px (already set) */
-@media (max-width:480px){
-  .field.attachment{ margin-bottom:16px !important; }
-  .checkbox-row{ margin-top:0 !important; row-gap:8px !important; column-gap:0 !important; }
 }

@@ -1,6 +1,4 @@
 :root{
-  /* layout */
-   /* layout */
   --header-h: 71px;                 
   --footer-h: 48px;                 
   --edge: 0.5rem;
@@ -8,7 +6,6 @@
   --maxw: 720px;
   --input-border: #000000;
   
-  /* colors */
   --body-bg: #BBBBBB;    
   --text:    #333333;     
   --header-bg: #333333;   
@@ -16,18 +13,14 @@
   --link-on:  #B2F5EA;    
   --link-off: #00B8D4;    
 
-  /* button blue from Figma */
   --btn-blue: #007EA8;
 }
 
-/* reset */
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
 
-/* body */
 body{
-  /* background:#ffffff; */        /* CHANGED */
-  background:var(--body-bg);       /* CHANGED */
+  background:var(--body-bg);      
   color:var(--text);
 }
 body.site{
@@ -37,7 +30,6 @@ body.site{
   font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
 }
 
-/* header */
 header, #header, .site-header {
   height: var(--header-h);                 
   width: 100%;
@@ -45,12 +37,11 @@ header, #header, .site-header {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  padding: 0 16px;                 /* Figma: 16px gutter -> controls left start of “Home” */
+  padding: 0 16px;                 
   border: 0;
   box-sizing: border-box;
 }
 
-/* nav lets the header background show through */
 .site-header > nav,
 nav,
 .navbar,
@@ -60,10 +51,9 @@ header nav,
   background-color: transparent;
 }
 
-/* nav links */
 .navbar ul{
   display:flex;
-  gap: 2rem;          
+  gap: 0;          
   list-style: none;
   margin: 0;
   padding: 0;
@@ -71,51 +61,48 @@ header nav,
   justify-content: flex-start;
 }
 .navbar li{ margin:0; padding:0; }
+.navbar li + li{ margin-left: 32px; }
 
 .navbar a{
   text-decoration: none;
-  font-size: 19.2px;       /* Figma */
+  font-size: 19.2px;      
   font-weight: 400;
   margin: 0;
-  padding: 16px;           /* Figma: link’s own padding (affects “Home” left spacing) */
-  color: var(--link-off);  /* #00B8D4 */
+  padding: 16px 0;           
+  color: var(--link-off);  
 }
 .navbar a.current{
-  color: var(--link-on);   /* #B2F5EA */
+  color: var(--link-on);   
   font-weight: 700;
 }
 .navbar a:hover{
   color: #FFFFFF;
-  text-decoration: underline;  /* matches the hover mock */
+  text-decoration: underline;  
 }
 
-/* 0.5rem side padding on text elements (keep) */
 h1,h2,h3,h4,h5,h6,p,li,summary,label,button{ padding-left:.5rem; padding-right:.5rem; }
 a{ padding-left:.5rem; padding-right:.5rem; }
-.site-header .navbar a{ padding-left:16px; padding-right:16px; } /* keep header link padding */
+.site-header .navbar a{ padding-left:0; padding-right:0; } /* keep header link padding */
 
-/* mobile: remove extra padding (keep) */
 @media (max-width:480px){
   h1,h2,h3,h4,h5,h6,p,li,summary,label,button{ padding-left:0; padding-right:0; }
   a{ padding-left:0; padding-right:0; }
   .site-header .navbar a{ padding-left:16px; padding-right:16px; } /* maintain link padding on mobile */
 }
 
-/* footer — match Figma */
 footer, #footer, .site-footer {
   height: var(--footer-h);
   width: 100%;
   background-color: var(--footer-bg);
   color: #FFFFFF;
   display: flex;
-  align-items: center;              /* vertical center */
-  justify-content: center;          /* horizontal center */
-  padding: 0;                       /* keep exact measured height */
+  align-items: center;              
+  justify-content: center;         
+  padding: 0;                       
   border: 0;
   box-sizing: border-box;
 }
 
-/* main area */
 .site-main{
   flex: 1;
   padding: 128px var(--edge);
@@ -127,14 +114,13 @@ footer, #footer, .site-footer {
 .btn{ align-self:center }
 .gap-24{ gap:24px }
 
-/* portrait */
 .portrait-link{ display:inline-block }
 .portrait-frame{
   width:200px; 
   height:200px;                     
   border-radius:50%;  
   overflow:hidden;            
-  margin:32px auto 32px auto;        
+  margin:0px auto 32px auto;        
 }
 .portrait-img{
   width:100%;
@@ -143,16 +129,14 @@ footer, #footer, .site-footer {
   display:block;
 }
 
-/* headings & paragraph (index/about) */
 .display{ font-size:48px; margin:0 0 16px 0 }
 .about-weight-700{ font-weight:700 }
 .lead{
-  font-size: 24px;         /* Figma: 24px */
-  line-height: 24px;       /* 100% per Inspect */
+  font-size: 24px;        
+  line-height: 24px;      
   margin: 0 0 24px 0;
 }
 
-/* button — white base, blue text/border; hover swaps per Figma (#007EA8) */
 .btn{
   width:126px;               
   height:40px;
@@ -168,12 +152,11 @@ footer, #footer, .site-footer {
   cursor:pointer;
 }
 .btn:hover{
-  background: var(--btn-blue);  /* swap */
+  background: var(--btn-blue);  
   color:#FFFFFF;
-  border-color:#FFFFFF;         /* white stroke on hover */
+  border-color:#FFFFFF;         
 }
 
-/* about page spacing */
 .classes { margin: 0; }
 .classes>summary{ font-size:18px; cursor:pointer }
 .classes>ul{ margin-top:1rem; list-style:disc }
@@ -188,30 +171,26 @@ footer, #footer, .site-footer {
 }
 .pdf-embed{ width:100%; height:60vh; display:block }
 
-/* contact email line */
 .email-line{ margin:0 0 24px; text-align:center }
 .email{ font-family:"Times New Roman",Times,serif; font-size:18px; font-weight:700 }
 
-/* form layout */
 .feedback-form{
   display:flex; flex-direction:column;
   width:100%; max-width:var(--maxw);
   margin-left:0; margin-right:0;
-  gap:0;                                  /* row spacing set below */
+  gap:0;                                  
   margin-top:0;
   margin-bottom:64px;
 }
 
-/* field rows */
 .field{
   display:flex; flex-direction:row; align-items:center; column-gap:16px; width:100%;
-  margin-bottom:32px;                     /* 32px between rows */
+  margin-bottom:32px;                     
 }
 .feedback-form label{
   font-size:16px; font-weight:700; text-align:right; padding:0; margin:0; min-width:140px; flex-shrink:0
 }
 
-/* inputs */
 .box{
   width:100%;
   padding:0.8rem;
@@ -220,7 +199,6 @@ footer, #footer, .site-footer {
   background:#fff;
 }
 
-/* consent row */
 .checkbox-row{
   display:flex; flex-direction:row; align-items:center; column-gap:8px;
   justify-content:flex-start;
@@ -231,7 +209,6 @@ footer, #footer, .site-footer {
 .checkbox-row input[type="checkbox"]{ transform:scale(1.5); transform-origin:left center; margin:0; padding:0 }
 .checkbox-row label{ text-align:left; padding:0; margin:0; margin-left:8px; }
 
-/* submit button alignment */
 .feedback-form .btn{
   align-self:flex-start;
   margin-left:0;
@@ -239,12 +216,10 @@ footer, #footer, .site-footer {
   margin-top:0;
 }
 
-/* desktop exact input width */
 @media (min-width: 800px){
   .box{ width:609px; }
 }
 
-/* responsive ≤ 480px */
 @media (max-width:480px){
   .field{ flex-direction:column; align-items:flex-start; row-gap:8px }
   .feedback-form label{ text-align:left; min-width:auto }

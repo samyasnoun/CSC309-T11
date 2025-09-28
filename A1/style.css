@@ -16,18 +16,15 @@
   /* form tokens */
   --label-col:140px;
   --label-gap:16px;
-  --consent-box:20px;   /* layout size we want for checkbox */
-  --consent-gap:18px;   /* checkbox ↔ label */
+  --consent-box:20px;
+  --consent-gap:18px;
 }
 
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
 
 body{background:var(--body-bg);color:var(--text)}
-body.site{
-  min-height:100vh;display:flex;flex-direction:column;
-  font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-}
+body.site{min-height:100vh;display:flex;flex-direction:column;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
 
 /* Header / Nav */
 header,#header,.site-header{
@@ -37,13 +34,10 @@ header,#header,.site-header{
 .site-header>nav,nav,.navbar,header nav{background:transparent}
 .navbar ul{display:flex;gap:0;list-style:none;margin:0;padding:0;align-items:center}
 .navbar li+li{margin-left:32px}
-.navbar a{
-  text-decoration:none;font-size:19.2px;font-weight:400;margin:0;padding:16px 0;color:var(--link-off)
-}
+.navbar a{text-decoration:none;font-size:19.2px;font-weight:400;margin:0;padding:16px 0;color:var(--link-off)}
 .navbar a.current{color:var(--link-on);font-weight:700}
 .navbar a:hover{color:#fff;text-decoration:underline}
 .navbar li:first-child a{padding-left:0}
-
 h1,h2,h3,h4,h5,h6,p,li,summary,label,button,a{padding-left:.5rem;padding-right:.5rem}
 .site-header .navbar a{padding-left:0;padding-right:0}
 
@@ -63,9 +57,7 @@ footer,#footer,.site-footer{
 
 /* Portrait */
 .portrait-link{display:inline-block}
-.portrait-frame{
-  width:200px;height:200px;border-radius:50%;overflow:hidden;margin:0 auto 32px auto
-}
+.portrait-frame{width:200px;height:200px;border-radius:50%;overflow:hidden;margin:0 auto 32px auto}
 .portrait-img{width:100%;height:100%;object-fit:cover;display:block}
 
 /* Type */
@@ -91,29 +83,17 @@ footer,#footer,.site-footer{
 .embed-wrap{width:100%;max-width:var(--maxw);margin-inline:auto;margin-top:16px;margin-bottom:0}
 .pdf-embed{width:100%;height:60vh;display:block;border:0;outline:0;box-shadow:none}
 
-/* Contact */
+/* Contact intro */
 .email-line{margin:0 0 24px;text-align:center}
 .email{font-family:"Times New Roman",Times,serif;font-size:32px;font-weight:700;color:#0000EE}
 
 /* Form */
-.feedback-form{
-  display:flex;flex-direction:column;width:100%;max-width:var(--maxw);
-  margin:0;gap:0;
-}
-.field{
-  display:flex;flex-direction:row;align-items:baseline;column-gap:16px;width:100%;
-  margin-bottom:16px; /* input↔input baseline */
-}
+.feedback-form{display:flex;flex-direction:column;width:100%;max-width:var(--maxw);margin:0;gap:0}
+.field{display:flex;flex-direction:row;align-items:baseline;column-gap:16px;width:100%;margin-bottom:16px}
 .feedback-form .field:nth-of-type(2) .box{margin-top:0}
-
-.feedback-form label{
-  font-size:16px;font-weight:700;text-align:right;padding:0;margin:0;min-width:var(--label-col);flex-shrink:0;
-}
+.feedback-form label{font-size:16px;font-weight:700;text-align:right;padding:0;margin:0;min-width:var(--label-col);flex-shrink:0}
 .field + .field > label{margin-top:2px}
-
-.box{
-  width:100%;padding:.8rem;border:1px solid #DDD;border-radius:3px;background:#fff;margin:0;
-}
+.box{width:100%;padding:.8rem;border:1px solid #DDD;border-radius:3px;background:#fff;margin:0}
 @media (min-width:800px){.box{width:609px}}
 
 /* Consent row (desktop baseline) */
@@ -122,11 +102,8 @@ footer,#footer,.site-footer{
   margin-left:calc(var(--label-col) + var(--label-gap) - (var(--consent-box) + var(--consent-gap)));
   margin-top:32px;margin-bottom:32px;
 }
-/* Make the checkbox’s LAYOUT width = 20px and keep a non-none transform. */
-.checkbox-row input[type="checkbox"]{
-  width:var(--consent-box);height:var(--consent-box);transform:scale(1);transform-origin:left center;margin:0;padding:0;
-}
-.checkbox-row label{ text-align:left;padding:0;margin:0 }
+.checkbox-row input[type="checkbox"]{transform:scale(1.5);transform-origin:left center;margin:0;padding:0}
+.checkbox-row label{text-align:left;padding:0;margin:0}
 
 /* ---------- Mobile (≤480px) ---------- */
 @media (max-width:480px){
@@ -136,40 +113,37 @@ footer,#footer,.site-footer{
   .feedback-form label{text-align:left;min-width:auto}
   .field + .field > label{margin-top:0 !important}
 
-  /* Email input → Feedback label previously high; leave field(1) at 16px */
-  .feedback-form .field:nth-of-type(1){margin-bottom:16px !important}
-
-  /* Feedback input → Attachment label must be 16px */
+  /* Feedback input → Attachment label = 16px (exact) */
   .feedback-form .field:nth-of-type(2){margin-bottom:16px !important}
 
   .checkbox-row{
     flex-direction:column;align-items:flex-start;row-gap:0;column-gap:0;margin-left:0;
-    margin-top:3.6px !important; /* Attachment input → Consent input = 16px */
-    margin-bottom:32px;padding-top:0;
+    margin-top:0 !important;margin-bottom:32px;padding-top:0;
   }
-  /* Consent input → Agree text = 8px visually */
-  .checkbox-row input[type="checkbox"]{margin:0 0 11px 0}
+  .checkbox-row input[type="checkbox"]{margin:0 0 8px 0} /* consent input → text = 8px */
   .feedback-form .btn{align-self:flex-start;margin-left:0}
   .feedback-form{gap:0}
   .field.attachment{margin-bottom:16px !important}
-  .site-header .navbar a{padding-left:0;padding-right:0}
 }
 
 /* ---------- Desktop (≥481px) ---------- */
 @media (min-width:481px){
-  /* Labels: “Your Email” → “Feedback” = 32px */
-  .feedback-form .field:nth-of-type(2){ margin-top:-14px !important; } /* reduce label gap by 14 */
-  /* Inputs: Email → Feedback = 16px (21.4 - 14 + 8.6) */
-  .feedback-form .field:nth-of-type(2) .box{ margin-top:8.6px !important; }
+  /* Label→label “Your Email” to “Feedback” = 32px */
+  .field.email{margin-bottom:0 !important}
+  .field.feedback{margin-top:32px !important}
 
-  /* Attachment input → Agree label = 32px (16 + 16), and left-align Agree text with inputs */
-  .feedback-form .field:nth-of-type(3){ margin-bottom:16px !important; }
-  .checkbox-row{ align-items:flex-start !important; margin-top:16px !important; }
+  /* Email input → Feedback input = 16px (final fix) */
+  .feedback-form .field:nth-of-type(2) .box{margin-top:-16px !important}
 
-  /* Left edges: Agree text and Submit button both at input left edge (156px) */
-  .checkbox-row label{ margin-left:0 !important; }
-  .feedback-form .btn{ align-self:flex-start; margin-left:calc(var(--label-col) + var(--label-gap)); }
+  /* Attachment input → Agree label = 32px (16 + 16) and left alignment locks */
+  .feedback-form .field:nth-of-type(3){margin-bottom:16px !important}
+  .checkbox-row{align-items:flex-start !important;margin-top:16px !important}
 
-  /* Button width exact */
-  .btn{ width:142px; }
+  /* Button left edge = input column left; width exact */
+  .feedback-form .btn{align-self:flex-start;margin-left:calc(var(--label-col) + var(--label-gap))}
+}
+
+/* Small-header paddings reset */
+@media (max-width:480px){
+  .site-header .navbar a{padding-left:0;padding-right:0}
 }

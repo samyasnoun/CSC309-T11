@@ -203,14 +203,14 @@ footer, #footer, .site-footer {
 }
 
 .checkbox-row{
-  display:flex; flex-direction:row; align-items:center; column-gap:0;
+  display:flex; flex-direction:row; align-items:center; column-gap:18px;
   justify-content:flex-start;
   margin-left:0;
   margin-top:0;
   margin-bottom:32px;
 }
 .checkbox-row input[type="checkbox"]{ transform:scale(1.5); transform-origin:left center; margin:0; padding:0 }
-.checkbox-row label{ text-align:left; padding:0; margin:0; margin-left:18px; }
+.checkbox-row label{ text-align:left; padding:0; margin:0; margin-left:0; }
 
 .feedback-form .btn{
   align-self:flex-start;
@@ -227,10 +227,12 @@ footer, #footer, .site-footer {
   .field{ flex-direction:column; align-items:flex-start; row-gap:8px }
   .feedback-form label{ text-align:left; min-width:auto }
 
+  .field + .field > label { margin-top:0; }
+
   .checkbox-row{
     flex-direction:row; column-gap:8px; align-items:center; justify-content:flex-start;
     margin-left:0;
-    margin-top:8px;
+    margin-top:0;
     margin-bottom:32px;
   }
   .checkbox-row input[type="checkbox"]{ margin:0; }

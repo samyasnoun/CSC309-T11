@@ -9,12 +9,12 @@
   
   /* colors */
   /* --body-bg:inherit; */ /* CHANGED: replace inherited white with a dark (non-white) body background */
-  --body-bg:#0f172a; /* CHANGED */
-  --text:#000000;
-  --header-bg:#000000;
-  --link-on:#b2f5ea;
-  --link-off:#00b8d4;
-  --btn-accent:#00b8d4; 
+  --body-bg: #BBBBBB;    
+  --text:    #333333;     
+  --header-bg: #333333;   
+  --footer-bg: #333333;   
+  --link-on:  #B2F5EA;    
+  --link-off: #00B8D4;    
 }
 
 /* reset */
@@ -36,15 +36,15 @@ body.site{
 
 /* header */
 header, #header, .site-header {
-  height:70px;                 
-  width:100%;
-  background-color:#000000;  /* solid black, ensures grader detects it */
-  display:flex;
-  align-items:center;
-  justify-content:flex-start;
-  padding:0 0.5rem;
-  border:0;
-  box-sizing:border-box;
+  height: 56px;                 
+  width: 100%;
+  background-color: var(--header-bg);
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 0.5rem;
+  border: 0;
+  box-sizing: border-box;
 }
 
 /* Some graders sample the nav instead of header; keep it black as well */
@@ -53,10 +53,8 @@ nav,
 .navbar,
 .site-header .navbar,
 header nav,
-#header nav,
-header .navbar,
-#header .navbar{
-  background-color:#000000;
+#header nav {
+  background-color: transparent;   /* let the header’s #333333 show through */
 }
 
 /* nav links */
@@ -72,19 +70,19 @@ header .navbar,
 .navbar li{ margin:0; padding:0; }
 
 .navbar a{
-  text-decoration:none;
-  font-size:18px;
-  font-weight:400;
-  margin:0;
-  padding:0;        
-  color:#00b8d4;     
+  text-decoration: none;
+  font-size: 19.2px;   /* Figma shows 19.2px */
+  font-weight: 400;
+  margin: 0;
+  padding: 0;
+  color: var(--link-off);  /* #00B8D4 */
 }
 .navbar a.current{
-  color:#b2f5ea;     /* active page */
-  font-weight:700;
+  color: var(--link-on);   /* #B2F5EA */
+  font-weight: 700;
 }
 .navbar a:hover{
-  color:#ffffff;     /* hover = white for all */
+  color: #FFFFFF;          /* if your prototype shows white on hover */
 }
 
 /* 0.5rem side padding on text elements (keep) */

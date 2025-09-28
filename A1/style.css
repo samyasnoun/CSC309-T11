@@ -137,7 +137,7 @@ footer,#footer,.site-footer{
   text-decoration:none;
   cursor:pointer;
 }
-.btn:hover{ background:var(--btn-blue); color:#FFFFFF; border-color:#FFFFFF }
+.btn:hover{ background:#007EA8; color:#FFFFFF; border-color:#FFFFFF }
 
 /* Lists / embeds */
 .classes{ margin:0 }
@@ -250,7 +250,7 @@ footer,#footer,.site-footer{
   .checkbox-row{
     flex-direction:column;
     align-items:flex-start;
-    row-gap:8px;                          /* CHANGED: was 0 → EXACT 8px for test */
+    row-gap:8px;                          /* EXACT 8px for test */
     column-gap:0;
     margin-left:0;                        /* input column collapses */
     margin-top:0;
@@ -267,4 +267,25 @@ footer,#footer,.site-footer{
   }
 
   .feedback-form{ gap:0 }
+
+  /* MOBILE OVERRIDES (tests expect 16px before consent row) */
+  .field.attachment { margin-bottom: 16px !important; }
+  .checkbox-row { margin-top: 0 !important; }
 }
+
+/* =========================
+   DESKTOP OVERRIDES (≥481px)
+   lock exact test gaps
+   ========================= */
+@media (min-width:481px){
+  /* Email ↔ Feedback (label-to-label) = 32px */
+  .field.email { margin-bottom: 0 !important; }
+  .field.feedback { margin-top: 32px !important; }
+
+  /* Attachments input ↔ Agree text = 32px */
+  .field.attachment { margin-bottom: 0 !important; }
+  .checkbox-row { margin-top: 32px !important; }
+}
+
+/* Always zero hidden label nudges so they don't stack */
+.feedback-form .field + .field > label { margin-top: 0 !important; }

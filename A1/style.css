@@ -329,3 +329,15 @@ footer,#footer,.site-footer{
   .feedback-form .field + .field > label{ margin-top:16px !important; }
   .feedback-form .field:nth-of-type(2) .box{ margin-top:0 !important; }
 }
+
+@media (min-width: 481px){
+  /* Email ↔ Feedback */
+  .field.email{ margin-bottom:0 !important; }            /* no extra bottom on row 1 */
+  .field.feedback{ margin-top:16px !important; }         /* input→input = 16px */
+  .field.feedback > label{ margin-top:16px !important; } /* label→label = 32px */
+  .feedback-form .field:nth-of-type(2) .box{ margin-top:0 !important; }
+
+  /* Attachments ↔ Agree text */
+  .feedback-form .field:nth-of-type(3){ margin-bottom:0 !important; }
+  .checkbox-row{ margin-top:32px !important; align-items:flex-start !important; }
+}

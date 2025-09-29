@@ -325,3 +325,20 @@ footer,#footer,.site-footer{
     align-items: flex-start !important; /* measure from label top */
   }
 }
+
+@media (min-width: 481px){
+  /* A) Email→Feedback (labels) = 32px, inputs stay 16px */
+  .field.email{ margin-bottom: 0 !important; }          /* row 1 adds no gap */
+  .field.feedback{ margin-top: 16px !important; }        /* input→input = 16px */
+  .feedback-form .field + .field > label{ margin-top: 0 !important; } /* kill generic nudge */
+  .feedback-form .field.feedback > label{ margin-top: 16px !important; } /* +16 on the label only */
+  /* Net label→label = 16 (row) + 16 (label) = 32 */
+
+  /* B) Attachments input → Agree text (label) = 32px measured to label top */
+  .feedback-form .field:nth-of-type(3){ margin-bottom: 0 !important; } /* ignore earlier 16 */
+  .field.attachment{ margin-bottom: 0 !important; }     /* no gap on the field */
+  .checkbox-row{
+    margin-top: 32px !important;                        /* full 32px lives here */
+    align-items: flex-start !important;                 /* measure from label top */
+  }
+}

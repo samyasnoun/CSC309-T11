@@ -1,22 +1,23 @@
 :root{
-  --header-h:71px;
-  --footer-h:48px;
-  --edge:.5rem;
-  --content-gap:128px;
-  --maxw:720px;
-  --input-border:#000000;
-  --body-bg:#BBBBBB;
-  --text:#333333;
-  --header-bg:#333333;
-  --footer-bg:#333333;
-  --link-on:#B2F5EA;
-  --link-off:#00B8D4;
-  --btn-blue:#007EA8;
+  --header-h: 71px;
+  --footer-h: 48px;
+  --edge: 0.5rem;
+  --content-gap: 128px;
+  --maxw: 720px;
+  --input-border: #000000;
+  --body-bg: #BBBBBB;
+  --text: #333333;
+  --header-bg: #333333;
+  --footer-bg: #333333;
+  --link-on: #B2F5EA;
+  --link-off: #00B8D4;
+  --btn-blue: #007EA8;
 
-  --label-col:140px;
-  --label-gap:16px;
-  --consent-box:20px;
-  --consent-gap:18px;
+  /* Form alignment & consent tokens */
+  --label-col: 140px;   /* label column width */
+  --label-gap: 16px;    /* label→input gap */
+  --consent-box: 20px;  /* visual checkbox size (target = 20x20) */
+  --consent-gap: 18px;  /* checkbox↔label spacing on desktop */
 }
 
 *{ box-sizing:border-box }
@@ -39,7 +40,7 @@ header,#header,.site-header{
   align-items:center;
   justify-content:flex-start;
   border:0;
-  padding-left:24px;
+  padding-left:24px; /* Home is 24px from left */
 }
 .site-header>nav,nav,.navbar,.site-header .navbar,header nav,#header nav{ background:transparent }
 
@@ -70,6 +71,12 @@ h1,h2,h3,h4,h5,h6,p,li,summary,label,button{ padding-left:.5rem; padding-right:.
 a{ padding-left:.5rem; padding-right:.5rem }
 .site-header .navbar a{ padding-left:0; padding-right:0 }
 
+@media (max-width:480px){
+  h1,h2,h3,h4,h5,h6,p,li,summary,label,button{ padding-left:0; padding-right:0 }
+  a{ padding-left:0; padding-right:0 }
+  .site-header .navbar a{ padding-left:0; padding-right:0 }
+}
+
 /* Footer */
 footer,#footer,.site-footer{
   height:var(--footer-h);
@@ -83,7 +90,7 @@ footer,#footer,.site-footer{
   border:0;
 }
 
-/* Main */
+/* Main layout */
 .site-main{ flex:1; padding:128px var(--edge) }
 .site-main>*{ margin-left:auto; margin-right:auto; text-align:center }
 .center{ margin-inline:auto }
@@ -109,7 +116,7 @@ footer,#footer,.site-footer{
 
 /* Buttons */
 .btn{
-  width:126px;
+  width:142px;              /* expected ≈141.8px */
   height:40px;
   display:inline-flex;
   align-items:center;
@@ -135,7 +142,7 @@ footer,#footer,.site-footer{
 .embed-wrap{ width:100%; max-width:var(--maxw); margin-inline:auto; margin-top:16px; margin-bottom:0 }
 .pdf-embed{ width:100%; height:60vh; display:block; border:0; outline:0; box-shadow:none }
 
-/* Contact */
+/* Contact bits */
 .email-line{ margin:0 0 24px; text-align:center }
 .email{
   font-family:"Times New Roman",Times,serif;
@@ -151,16 +158,17 @@ footer,#footer,.site-footer{
   margin-left:0; margin-right:0;
   gap:0; margin-top:0; margin-bottom:0;
 }
+
 .field{
   display:flex;
   flex-direction:row;
-  align-items:baseline;
+  align-items:baseline;        /* label sits by the input text line */
   column-gap:16px;
   width:100%;
-  margin-bottom:16px;
+  margin-bottom:16px;          /* 16px between inputs */
 }
 
-/* Email text above form to fields gap */
+/* Email text above form */
 .feedback-form .email{ margin-bottom:32px; }
 
 .feedback-form .field:nth-of-type(2) .box{ margin-top:0; }
@@ -171,6 +179,7 @@ footer,#footer,.site-footer{
 }
 .field + .field > label{ margin-top:2px }
 
+/* Inputs */
 .box{
   width:100%;
   padding:.8rem;
@@ -179,90 +188,101 @@ footer,#footer,.site-footer{
   background:#fff;
   margin:0;
 }
-@media (min-width:800px){ .box{ width:609px } }
 
-/* Consent */
+@media (min-width:800px){
+  .box{ width:609px }
+}
+
+/* Consent row (desktop) */
+/* Align Agree text with inputs by offsetting row by checkbox + gap */
 .checkbox-row{
   display:flex;
   flex-direction:row;
   align-items:center;
-  column-gap:var(--consent-gap);
+  column-gap:var(--consent-gap);    /* EXACT 18px */
   justify-content:flex-start;
   margin-left: calc(var(--label-col) + var(--label-gap) - (var(--consent-box) + var(--consent-gap)));
-  margin-top:32px;
+  margin-top:32px;                  /* Attachments → Agree text = 32px */
   margin-bottom:32px;
 }
+
+/* Consent size via transform */
 .checkbox-row input[type="checkbox"]{
-  transform:scale(1.5);
-  transform-origin:left center;
+  transform: scale(1.5);
+  transform-origin: left center;
   margin:0;
   padding:0;
 }
+
+/* Agree label */
 .checkbox-row label{ text-align:left; padding:0; margin:0 }
 
-/* Mobile ≤480px */
-@media (max-width:480px){
-  h1,h2,h3,h4,h5,h6,p,li,summary,label,button{ padding-left:0; padding-right:0 }
-  a{ padding-left:0; padding-right:0 }
-  .site-header .navbar a{ padding-left:0; padding-right:0 }
+/* Submit button aligns with inputs */
+.feedback-form .btn{
+  align-self:flex-start;
+  margin-left: calc(var(--label-col) + var(--label-gap)); /* default desktop: input left */
+  width:142px;
+  margin-top:0;
+}
 
+/* Responsive (≤480px) */
+@media (max-width:480px){
   .field{
     flex-direction:column;
     align-items:flex-start;
     row-gap:8px;
-    margin-bottom:16px;
+    margin-bottom:16px; /* keep 16px between inputs on mobile */
   }
   .feedback-form label{ text-align:left; min-width:auto }
   .field + .field > label{ margin-top:0 }
 
+  /* consent: stack vertically, 8px gap, flush-left */
   .checkbox-row{
     flex-direction:column;
     align-items:flex-start;
     row-gap:8px;
     column-gap:0;
     margin-left:0;
-    margin-top:0;
+    margin-top:4px !important;        /* make Attachment→Consent = 16px visually */
     margin-bottom:32px;
     padding-top:0;
   }
-  .checkbox-row input[type="checkbox"]{ margin:0 }
+  .checkbox-row input[type="checkbox"]{
+    margin:0;
+    margin-bottom:11px !important;    /* checkbox→Agree text = 8px visually */
+  }
   .checkbox-row label{ margin:0; text-align:left }
 
-  .feedback-form .btn{ align-self:flex-start; margin-left:0 }
+  /* button shares the same left edge on mobile */
+  .feedback-form .btn{
+    align-self:flex-start;
+    margin-left:0;
+  }
+
   .feedback-form{ gap:0 }
 
-  .field.attachment{ margin-bottom:16px !important; }
-  .checkbox-row{ margin-top:0 !important; }
+  .field.attachment { margin-bottom:16px !important; }
 }
 
-/* Desktop ≥481px */
+/* Desktop overrides (≥481px) */
 @media (min-width:481px){
-  .field.email{ margin-bottom:0 !important; }
-  .field.feedback{ margin-top:32px !important; }
-  .field.attachment{ margin-bottom:0 !important; }
-  .checkbox-row{ margin-top:32px !important; }
+  /* Inputs: 16px between rows */
+  .field.email { margin-bottom:0 !important; }
+  .field.feedback { margin-top:16px !important; }
 
-  .feedback-form .field + .field > label{ margin-top:0 !important; }
-  .checkbox-row{ align-items:flex-start !important; }
-  .checkbox-row label{ margin-left:7px !important; }
-
-  /* Final desktop locks used in your passing version */
-  .feedback-form .field:nth-of-type(2){ margin-top:-8px !important; }
-  .feedback-form .field:nth-of-type(3){ margin-bottom:16px !important; }
-  .checkbox-row{ margin-top:16px !important; }
-  .feedback-form .field:nth-of-type(2) .box{ margin-top:7.6px !important; }
-
-  .feedback-form .email{ margin-bottom:0 !important; }
-  .feedback-form .field:nth-of-type(2){ margin-top:0 !important; }
-  .field.email{ margin-bottom:0 !important; }
-  .field.feedback{ margin-top:16px !important; }
-  .field.feedback > label{ margin-top:16px !important; }
-  .feedback-form .field:nth-of-type(2) .box{ margin-top:0 !important; }
-  .feedback-form .field + .field > label{ margin-top:0 !important; }
-
-  .feedback-form .email{ margin-bottom:0 !important; }
-  .field.email{ margin-bottom:0 !important; }
-  .field.feedback{ margin-top:16px !important; }
+  /* Labels: 32px between “Your Email” and “Feedback” */
   .feedback-form .field + .field > label{ margin-top:16px !important; }
+
+  /* Attachments ↔ Agree text = 32px via 16+16 split */
+  .field.attachment { margin-bottom:16px !important; }
+  .checkbox-row { margin-top:16px !important; align-items:flex-start !important; }
+
+  /* Align Agree text and Submit button to same left edge
+     (subtract checkbox + its gap from the normal input offset) */
+  .feedback-form .btn{
+    margin-left: calc(var(--label-col) + var(--label-gap) - (var(--consent-box) + var(--consent-gap))) !important;
+  }
+
+  /* Remove any hidden nudges */
   .feedback-form .field:nth-of-type(2) .box{ margin-top:0 !important; }
 }

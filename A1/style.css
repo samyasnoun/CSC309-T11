@@ -235,7 +235,7 @@ footer,#footer,.site-footer{
   .field.attachment { margin-bottom:16px !important; }
   .checkbox-row { margin-top:0 !important; }
 }
-/* 
+
 @media (min-width:481px){
   .field.email { margin-bottom:0 !important; }
   .field.feedback { margin-top:32px !important; }
@@ -259,7 +259,7 @@ footer,#footer,.site-footer{
 @media (min-width:481px){
   .checkbox-row label{ margin-left:7px !important; }
 }
-@media (max-width:480px){
+/* @media (max-width:480px){
   .field.attachment{ margin-bottom:16px !important; }
   .checkbox-row{ 
     margin-top:4px !important;

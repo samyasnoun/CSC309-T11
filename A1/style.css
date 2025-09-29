@@ -14,10 +14,10 @@
   --btn-blue: #007EA8;
 
   /* Form alignment & consent tokens */
-  --label-col: 140px;   /* label column width */
-  --label-gap: 16px;    /* label→input gap */
-  --consent-box: 20px;  /* visual checkbox size (target = 20x20) */
-  --consent-gap: 18px;  /* checkbox↔label spacing on desktop */
+  --label-col: 140px;
+  --label-gap: 16px;
+  --consent-box: 20px;
+  --consent-gap: 18px;
 }
 
 *{ box-sizing:border-box }
@@ -40,7 +40,7 @@ header,#header,.site-header{
   align-items:center;
   justify-content:flex-start;
   border:0;
-  padding-left:24px; /* Home is 24px from left */
+  padding-left:24px;
 }
 .site-header>nav,nav,.navbar,.site-header .navbar,header nav,#header nav{ background:transparent }
 
@@ -116,7 +116,7 @@ footer,#footer,.site-footer{
 
 /* Buttons */
 .btn{
-  width:142px;              /* expected ≈141.8px */
+  width:126px;
   height:40px;
   display:inline-flex;
   align-items:center;
@@ -162,15 +162,14 @@ footer,#footer,.site-footer{
 .field{
   display:flex;
   flex-direction:row;
-  align-items:baseline;        /* label sits by the input text line */
+  align-items:baseline;
   column-gap:16px;
   width:100%;
-  margin-bottom:16px;          /* 16px between inputs */
+  margin-bottom:16px;
 }
 
-/* Email text above form */
+/* Spacing helpers */
 .feedback-form .email{ margin-bottom:32px; }
-
 .feedback-form .field:nth-of-type(2) .box{ margin-top:0; }
 
 .feedback-form label{
@@ -194,19 +193,17 @@ footer,#footer,.site-footer{
 }
 
 /* Consent row (desktop) */
-/* Align Agree text with inputs by offsetting row by checkbox + gap */
 .checkbox-row{
   display:flex;
   flex-direction:row;
   align-items:center;
-  column-gap:var(--consent-gap);    /* EXACT 18px */
+  column-gap:var(--consent-gap);
   justify-content:flex-start;
   margin-left: calc(var(--label-col) + var(--label-gap) - (var(--consent-box) + var(--consent-gap)));
-  margin-top:32px;                  /* Attachments → Agree text = 32px */
+  margin-top:32px;
   margin-bottom:32px;
 }
 
-/* Consent size via transform */
 .checkbox-row input[type="checkbox"]{
   transform: scale(1.5);
   transform-origin: left center;
@@ -214,13 +211,12 @@ footer,#footer,.site-footer{
   padding:0;
 }
 
-/* Agree label */
 .checkbox-row label{ text-align:left; padding:0; margin:0 }
 
-/* Submit button aligns with inputs */
+/* Submit button */
 .feedback-form .btn{
   align-self:flex-start;
-  margin-left: calc(var(--label-col) + var(--label-gap)); /* default desktop: input left */
+  margin-left: calc(var(--label-col) + var(--label-gap));
   width:142px;
   margin-top:0;
 }
@@ -231,29 +227,24 @@ footer,#footer,.site-footer{
     flex-direction:column;
     align-items:flex-start;
     row-gap:8px;
-    margin-bottom:16px; /* keep 16px between inputs on mobile */
+    margin-bottom:16px;
   }
   .feedback-form label{ text-align:left; min-width:auto }
   .field + .field > label{ margin-top:0 }
 
-  /* consent: stack vertically, 8px gap, flush-left */
   .checkbox-row{
     flex-direction:column;
     align-items:flex-start;
     row-gap:8px;
     column-gap:0;
     margin-left:0;
-    margin-top:4px !important;        /* make Attachment→Consent = 16px visually */
+    margin-top:0;
     margin-bottom:32px;
     padding-top:0;
   }
-  .checkbox-row input[type="checkbox"]{
-    margin:0;
-    margin-bottom:11px !important;    /* checkbox→Agree text = 8px visually */
-  }
+  .checkbox-row input[type="checkbox"]{ margin:0 }
   .checkbox-row label{ margin:0; text-align:left }
 
-  /* button shares the same left edge on mobile */
   .feedback-form .btn{
     align-self:flex-start;
     margin-left:0;
@@ -262,27 +253,79 @@ footer,#footer,.site-footer{
   .feedback-form{ gap:0 }
 
   .field.attachment { margin-bottom:16px !important; }
+  .checkbox-row { margin-top:0 !important; }
 }
 
 /* Desktop overrides (≥481px) */
 @media (min-width:481px){
-  /* Inputs: 16px between rows */
   .field.email { margin-bottom:0 !important; }
-  .field.feedback { margin-top:16px !important; }
+  .field.feedback { margin-top:32px !important; }
+  .field.attachment { margin-bottom:0 !important; }
+  .checkbox-row { margin-top:32px !important; }
+}
 
-  /* Labels: 32px between “Your Email” and “Feedback” */
-  .feedback-form .field + .field > label{ margin-top:16px !important; }
+/* Prevent hidden nudges */
+.feedback-form .field + .field > label { margin-top:0 !important; }
 
-  /* Attachments ↔ Agree text = 32px via 16+16 split */
-  .field.attachment { margin-bottom:16px !important; }
-  .checkbox-row { margin-top:16px !important; align-items:flex-start !important; }
+/* Adjustments */
+@media (min-width:481px){
+  .feedback-form .field + .field > label{ margin-top:0 !important; }
+  .field.email{ margin-bottom:0 !important; }
+  .field.feedback{ margin-top:32px !important; }
+}
 
-  /* Align Agree text and Submit button to same left edge
-     (subtract checkbox + its gap from the normal input offset) */
-  .feedback-form .btn{
-    margin-left: calc(var(--label-col) + var(--label-gap) - (var(--consent-box) + var(--consent-gap))) !important;
+@media (min-width:481px){
+  .checkbox-row{
+    align-items:flex-start !important;
+    margin-top:32px !important;
   }
+}
 
-  /* Remove any hidden nudges */
+@media (min-width:481px){
+  .checkbox-row label{ margin-left:7px !important; }
+}
+
+@media (max-width:480px){
+  .field.attachment{ margin-bottom:16px !important; }
+  .checkbox-row{
+    margin-top:4px !important;
+    row-gap:0 !important;
+  }
+  .checkbox-row input[type="checkbox"]{
+    margin-bottom:11px !important;
+  }
+}
+
+.checkbox-row input[type="checkbox"]{
+  transform:scale(1.5) !important;
+  transform-origin:left center !important;
+}
+
+/* Final locks */
+@media (min-width: 481px){
+  .feedback-form .field:nth-of-type(2){ margin-top:-8px !important; }
+  .feedback-form .field:nth-of-type(3){ margin-bottom:16px !important; }
+  .checkbox-row{ align-items:flex-start !important; margin-top:16px !important; }
+}
+
+@media (min-width: 481px){
+  .feedback-form .field:nth-of-type(2) .box{ margin-top:7.6px !important; }
+}
+
+@media (min-width: 481px){
+  .feedback-form .email{ margin-bottom:0 !important; }
+  .feedback-form .field:nth-of-type(2){ margin-top:0 !important; }
+  .field.email{ margin-bottom:0 !important; }
+  .field.feedback{ margin-top:16px !important; }
+  .field.feedback > label{ margin-top:16px !important; }
+  .feedback-form .field:nth-of-type(2) .box{ margin-top:0 !important; }
+  .feedback-form .field + .field > label{ margin-top:0 !important; }
+}
+
+@media (min-width: 481px){
+  .feedback-form .email{ margin-bottom:0 !important; }
+  .field.email{ margin-bottom:0 !important; }
+  .field.feedback{ margin-top:16px !important; }
+  .feedback-form .field + .field > label{ margin-top:16px !important; }
   .feedback-form .field:nth-of-type(2) .box{ margin-top:0 !important; }
 }

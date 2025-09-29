@@ -342,3 +342,14 @@ footer,#footer,.site-footer{
     align-items: flex-start !important;                 /* measure from label top */
   }
 }
+
+@media (min-width: 481px){
+  /* Keep input→input at 16px */
+  .field.feedback{ margin-top:16px !important; }
+
+  /* Kill any hidden generic label nudge */
+  .feedback-form .field + .field > label{ margin-top:0 !important; }
+
+  /* Set the Feedback label's own offset to 8px to net 32px total */
+  .field.feedback > label{ margin-top:8px !important; }
+}

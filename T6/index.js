@@ -117,7 +117,7 @@ app.post('/notes', basicAuth, async (req, res) => {
       select: { id: true, title: true, description: true, completed: true, public: true, userId: true },
     });
 
-    return res.json(note);
+    return res.status(201).json(note);
   } catch (err) {
     return res.status(500).json({ message: "Internal server error" });
   }
@@ -193,37 +193,39 @@ app.patch('/notes/:noteId', basicAuth, async (req, res) => {
     return res.status(404).json({ message: "Not found" });
   }
 
-  // Build update data from any combination of fields
-  const { title, description, completed, public: isPublic } = req.body ?? {};
-  const data = {};
-
-  if (typeof title !== 'undefined') {
-    if (!isNonEmptyString(title)) return res.status(400).json({ message: "Invalid payload" });
-    data.title = title.trim();
-  }
-  if (typeof description !== 'undefined') {
-    if (!isNonEmptyString(description)) return res.status(400).json({ message: "Invalid payload" });
-    data.description = description.trim();
-  }
-  if (typeof completed !== 'undefined') {
-    if (!isBoolean(completed)) return res.status(400).json({ message: "Invalid payload" });
-    data.completed = completed;
-  }
-  if (typeof isPublic !== 'undefined') {
-    if (!isBoolean(isPublic)) return res.status(400).json({ message: "Invalid payload" });
-    data.public = isPublic;
-  }
-
-  if (Object.keys(data).length === 0) {
-    return res.status(400).json({ message: "Invalid payload" });
-  }
-
   try {
-    // Ownership check first
+    // 1) Check existence
     const existing = await prisma.note.findUnique({ where: { id: noteId } });
     if (!existing) return res.status(404).json({ message: "Not found" });
+
+    // 2) Ownership
     if (existing.userId !== req.user.id) {
       return res.status(403).json({ message: "Not permitted" });
+    }
+
+    // 3) Validate payload AFTER existence/ownership
+    const { title, description, completed, public: isPublic } = req.body ?? {};
+    const data = {};
+
+    if (typeof title !== 'undefined') {
+      if (!isNonEmptyString(title)) return res.status(400).json({ message: "Invalid payload" });
+      data.title = title.trim();
+    }
+    if (typeof description !== 'undefined') {
+      if (!isNonEmptyString(description)) return res.status(400).json({ message: "Invalid payload" });
+      data.description = description.trim();
+    }
+    if (typeof completed !== 'undefined') {
+      if (!isBoolean(completed)) return res.status(400).json({ message: "Invalid payload" });
+      data.completed = completed;
+    }
+    if (typeof isPublic !== 'undefined') {
+      if (!isBoolean(isPublic)) return res.status(400).json({ message: "Invalid payload" });
+      data.public = isPublic;
+    }
+
+    if (Object.keys(data).length === 0) {
+      return res.status(400).json({ message: "Invalid payload" });
     }
 
     const updated = await prisma.note.update({
@@ -236,13 +238,4 @@ app.patch('/notes/:noteId', basicAuth, async (req, res) => {
   } catch (err) {
     return res.status(500).json({ message: "Internal server error" });
   }
-});
-
-const server = app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
-
-server.on('error', (err) => {
-  console.error(`cannot start server: ${err.message}`);
-  process.exit(1);
 });

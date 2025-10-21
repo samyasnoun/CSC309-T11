@@ -11,6 +11,7 @@ let currentParagraph = 1;
 let hasMoreContent = true;
 let isLoading = false;
 let lastLoadTime = 0;
+let totalParagraphsLoaded = 0;
 const NUM_PARAGRAPHS_PER_REQUEST = 5;
 
 // Initialize the page when DOM is loaded
@@ -39,18 +40,23 @@ async function loadParagraphs() {
         if (response.ok) {
             // Only render if we have data
             if (result.data && result.data.length > 0) {
-                console.log(`Loaded ${result.data.length} paragraphs, hasMore: ${result.next}`);
+                console.log(`Loaded ${result.data.length} paragraphs, server says next: ${result.next}, will continue: ${result.data.length >= NUM_PARAGRAPHS_PER_REQUEST}`);
                 renderParagraphs(result.data);
                 
                 // Update state
                 currentParagraph += result.data.length;
-                hasMoreContent = result.next;
+                totalParagraphsLoaded += result.data.length;
                 
-                // Additional protection: if we get fewer paragraphs than expected, 
-                // we've reached the end
+                // Stop loading if we get fewer paragraphs than expected
+                // This is the key fix - regardless of what the server says about 'next',
+                // if we get fewer than 5 paragraphs, we've reached the end
                 if (result.data.length < NUM_PARAGRAPHS_PER_REQUEST) {
                     hasMoreContent = false;
+                } else {
+                    hasMoreContent = result.next;
                 }
+                
+                console.log(`Total paragraphs loaded so far: ${totalParagraphsLoaded}`);
                 
                 // If no more content, show end message and stop all loading
                 if (!hasMoreContent) {

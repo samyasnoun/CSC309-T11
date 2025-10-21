@@ -22,7 +22,7 @@ app.get('/text', async (req, res) => {
     const start = parseInt(req.query.paragraph, 10) || 1;
     const end = start + NUM_PARAGRAPHS_PER_REQUEST;
     try {
-        const [data, nextCount] = await prisma.$transaction([
+        const [data, totalCount] = await prisma.$transaction([
             prisma.paragraph.findMany({
                 where: {
                     id: {
@@ -34,11 +34,9 @@ app.get('/text', async (req, res) => {
                     id: 'asc',
                 },
             }),
-            prisma.paragraph.count({
-                where: { id: end },
-            }),
+            prisma.paragraph.count(),
         ]);
-        const next = nextCount > 0;
+        const next = data.length === NUM_PARAGRAPHS_PER_REQUEST;
         res.json({ data, next });
     } catch (error) {
         console.error(error);

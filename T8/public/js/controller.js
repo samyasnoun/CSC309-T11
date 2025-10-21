@@ -13,7 +13,7 @@ let isLoading = false;
 let lastLoadTime = 0;
 let paragraphLikes = {}; // Track like state for each paragraph
 let paragraphClickCount = {}; // Track number of clicks for each paragraph
-let isFirstLoad = true; // Track if this is the first load
+// Remove the first load tracking since we should load 5 initially
 const MAX_PARAGRAPHS = 46;
 
 // Initialize the page when DOM is loaded
@@ -39,9 +39,7 @@ async function loadParagraphs() {
         return;
     }
     
-    // For first load, only load 1 paragraph
-    // For subsequent loads, load 5 paragraphs
-    const loadCount = isFirstLoad ? 1 : 5;
+    // Load 5 paragraphs per request as per handout
     
     isLoading = true;
     
@@ -57,13 +55,8 @@ async function loadParagraphs() {
                 // Update state - increment by the number of paragraphs actually loaded
                 currentParagraph += result.data.length;
                 
-                // Mark first load as complete
-                if (isFirstLoad) {
-                    isFirstLoad = false;
-                }
-                
                 // Stop loading if we've reached 46 paragraphs or server says no more content
-                if (currentParagraph >= MAX_PARAGRAPHS || !result.next) {
+                if (currentParagraph > MAX_PARAGRAPHS || !result.next) {
                     hasMoreContent = false;
                     showEndMessage();
                     window.removeEventListener('scroll', handleScroll);

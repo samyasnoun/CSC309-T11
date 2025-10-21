@@ -12,9 +12,11 @@ class AuthController {
       
       const user = await AuthService.authenticate(utorid, password);
       const token = AuthService.generateToken(user);
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours from now
       
       res.json({
         token,
+        expiresAt: expiresAt.toISOString(),
         user: {
           id: user.id,
           utorid: user.utorid,
@@ -67,40 +69,6 @@ class AuthController {
     }
   }
   
-  // Login endpoint (replaces the old login)
-  static async login(req, res, next) {
-    try {
-      const { utorid, password } = req.body;
-      
-      if (!utorid || !password) {
-        return res.status(400).json({ error: 'Utorid and password are required' });
-      }
-      
-      const user = await AuthService.authenticate(utorid, password);
-      const token = AuthService.generateToken(user);
-      
-      res.json({
-        token,
-        user: {
-          id: user.id,
-          utorid: user.utorid,
-          email: user.email,
-          role: user.role
-        }
-      });
-    } catch (error) {
-      if (error.message === 'Invalid credentials') {
-        return res.status(401).json({ error: 'Invalid credentials' });
-      }
-      if (error.message === 'Account is deactivated') {
-        return res.status(403).json({ error: 'Account is deactivated' });
-      }
-      if (error.message === 'Account is not verified') {
-        return res.status(403).json({ error: 'Account is not verified' });
-      }
-      next(error);
-    }
-  }
   
   // Request password reset
   static async requestReset(req, res, next) {
@@ -113,7 +81,7 @@ class AuthController {
       
       const resetData = await AuthService.issueResetToken(utorid);
       
-      res.json({
+      res.status(202).json({
         message: 'Reset token generated',
         resetToken: resetData.resetToken,
         expiresAt: resetData.expiresAt

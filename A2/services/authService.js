@@ -76,7 +76,7 @@ class AuthService {
   
   // Get user by ID
   static async getUserById(userId) {
-    return await prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: userId },
       select: {
         id: true,
@@ -91,6 +91,13 @@ class AuthService {
         lastLogin: true
       }
     });
+    
+    if (user) {
+      // Add dummy password field for API compatibility
+      user.password = '';
+    }
+    
+    return user;
   }
   
   // Check if user has required role
@@ -635,7 +642,7 @@ class AuthService {
   
   // Get current user's full profile
   static async getSelfProfile(userId) {
-    return await prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: userId },
       select: {
         id: true,
@@ -653,6 +660,13 @@ class AuthService {
         avatarUrl: true
       }
     });
+    
+    if (user) {
+      // Add dummy password field for API compatibility
+      user.password = '';
+    }
+    
+    return user;
   }
   
   // Update current user's profile

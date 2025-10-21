@@ -1,0 +1,612 @@
+{
+  "info": {
+    "name": "A2 Loyalty API - Critical Flows",
+    "description": "Comprehensive Postman collection demonstrating critical flows for the A2 Loyalty API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "event_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "transaction_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "activation_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "reset_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "2. Create User (Cashier)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    pm.collectionVariables.set('activation_token', response.activationToken);",
+              "    console.log('Activation token saved:', response.activationToken);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"utorid\": \"newcash01\",\n  \"name\": \"New Cashier\",\n  \"email\": \"newcashier@mail.utoronto.ca\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/register",
+          "host": ["{{baseUrl}}"],
+          "path": ["auth", "register"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "3. Login (Manager)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    pm.collectionVariables.set('jwt_token', response.token);",
+              "    pm.collectionVariables.set('user_id', response.user.id);",
+              "    console.log('JWT token saved:', response.token);",
+              "    console.log('User ID saved:', response.user.id);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"utorid\": \"mgr001\",\n  \"password\": \"password123\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/tokens",
+          "host": ["{{baseUrl}}"],
+          "path": ["auth", "tokens"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "4. Activate Account (New Cashier)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"password\": \"newpassword123\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/resets/{{activation_token}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["auth", "resets", "{{activation_token}}"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "5. Login (New Cashier)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    pm.collectionVariables.set('jwt_token', response.token);",
+              "    pm.collectionVariables.set('user_id', response.user.id);",
+              "    console.log('New cashier JWT token saved:', response.token);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"utorid\": \"newcash01\",\n  \"password\": \"newpassword123\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/tokens",
+          "host": ["{{baseUrl}}"],
+          "path": ["auth", "tokens"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "6. Change Password",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"currentPassword\": \"newpassword123\",\n  \"newPassword\": \"updatedpassword123\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/me/password",
+          "host": ["{{baseUrl}}"],
+          "path": ["auth", "me", "password"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "7. Get Self Profile",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/auth/me",
+          "host": ["{{baseUrl}}"],
+          "path": ["auth", "me"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "8. Update Self Profile",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Updated Cashier Name\",\n  \"email\": \"updated.cashier@mail.utoronto.ca\",\n  \"birthday\": \"1995-06-15T00:00:00.000Z\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/me",
+          "host": ["{{baseUrl}}"],
+          "path": ["auth", "me"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "9. Create Promotion (Manager)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    pm.collectionVariables.set('promotion_id', response.promotion.id);",
+              "    console.log('Promotion created:', response.promotion.id);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"New Year Special\",\n  \"startAt\": \"2024-12-31T00:00:00.000Z\",\n  \"endAt\": \"2025-01-31T23:59:59.000Z\",\n  \"minSpendingCents\": 2000,\n  \"rateMultiplier\": 1.5,\n  \"oneTimePoints\": null\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/promotions",
+          "host": ["{{baseUrl}}"],
+          "path": ["promotions"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "10. Create Purchase with Promotion",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    pm.collectionVariables.set('transaction_id', response.transaction.id);",
+              "    console.log('Purchase transaction created:', response.transaction.id);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"type\": \"purchase\",\n  \"amountCents\": 3000,\n  \"targetUserId\": 1,\n  \"promotionId\": \"{{promotion_id}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/transactions",
+          "host": ["{{baseUrl}}"],
+          "path": ["transactions"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "11. Create Redemption (Customer)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    pm.collectionVariables.set('redemption_id', response.transaction.id);",
+              "    console.log('Redemption created:', response.transaction.id);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"type\": \"redemption\",\n  \"amountCents\": 100,\n  \"targetUserId\": 1\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/transactions",
+          "host": ["{{baseUrl}}"],
+          "path": ["transactions"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "12. Process Redemption (Cashier)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/transactions/{{redemption_id}}/processed",
+          "host": ["{{baseUrl}}"],
+          "path": ["transactions", "{{redemption_id}}", "processed"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "13. Create Transfer",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    console.log('Transfer completed:', response.message);",
+              "    console.log('Sender transaction:', response.senderTransaction.id);",
+              "    console.log('Receiver transaction:', response.receiverTransaction.id);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"type\": \"transfer\",\n  \"amountCents\": 50,\n  \"targetUserId\": 2\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/transactions",
+          "host": ["{{baseUrl}}"],
+          "path": ["transactions"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "14. Create Event",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    pm.collectionVariables.set('event_id', response.event.id);",
+              "    console.log('Event created:', response.event.id);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Demo Event 2024\",\n  \"description\": \"Demonstration event for testing\",\n  \"location\": \"Demo Hall\",\n  \"startAt\": \"2024-12-31T10:00:00.000Z\",\n  \"endAt\": \"2024-12-31T16:00:00.000Z\",\n  \"capacity\": 50,\n  \"pointsBudget\": 500\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/events",
+          "host": ["{{baseUrl}}"],
+          "path": ["events"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "15. Add Organizer to Event",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/events/{{event_id}}/organizers/3",
+          "host": ["{{baseUrl}}"],
+          "path": ["events", "{{event_id}}", "organizers", "3"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "16. RSVP to Event (Self)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/events/{{event_id}}/guests/me",
+          "host": ["{{baseUrl}}"],
+          "path": ["events", "{{event_id}}", "guests", "me"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "17. Award Points to Attendees",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"pointsPerPerson\": 25\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/events/{{event_id}}/award-points",
+          "host": ["{{baseUrl}}"],
+          "path": ["events", "{{event_id}}", "award-points"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "18. Get Event Details",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/events/{{event_id}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["events", "{{event_id}}"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "19. Get User Transactions",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/transactions/users/1",
+          "host": ["{{baseUrl}}"],
+          "path": ["transactions", "users", "1"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "20. Get All Users (Manager View)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/auth/users?page=1&limit=10",
+          "host": ["{{baseUrl}}"],
+          "path": ["auth", "users"],
+          "query": [
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "10"
+            }
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
+

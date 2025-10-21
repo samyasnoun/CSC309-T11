@@ -1,0 +1,10 @@
+Collaboration Statement for A2 Loyalty API Project
+
+I worked alone on this project.
+
+No collaboration with other students occurred during the development of this assignment.
+
+All code, documentation, and implementation was completed independently.
+
+The project was developed as an individual assignment with no shared code, ideas, or solutions with other students.
+

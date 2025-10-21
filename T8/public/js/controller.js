@@ -32,7 +32,7 @@ async function loadParagraphs() {
     }
     
     // Check if loading the next batch would exceed our limit
-    // Server returns 5 paragraphs per request, so check if currentParagraph + 5 > 46
+    // Server returns 5 paragraphs per request, so check if currentParagraph > 46
     if (currentParagraph > MAX_PARAGRAPHS) {
         hasMoreContent = false;
         showEndMessage();
@@ -117,8 +117,8 @@ function renderSingleParagraph(paragraph) {
 // Function to render paragraphs in the DOM
 function renderParagraphs(paragraphs) {
     paragraphs.forEach(paragraph => {
-        // Only render if we haven't already loaded this paragraph ID
-        if (!loadedParagraphIds.has(paragraph.id)) {
+        // Only render if we haven't already loaded this paragraph ID and it's within our max limit
+        if (!loadedParagraphIds.has(paragraph.id) && paragraph.id <= MAX_PARAGRAPHS) {
             renderSingleParagraph(paragraph);
             loadedParagraphIds.add(paragraph.id);
         }

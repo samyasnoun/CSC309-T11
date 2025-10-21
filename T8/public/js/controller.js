@@ -98,6 +98,11 @@ function renderParagraphs(paragraphs) {
 
 // Function to handle like button clicks
 async function handleLikeClick(paragraphId, buttonElement) {
+    // Disable button during request to prevent multiple clicks
+    buttonElement.disabled = true;
+    const originalText = buttonElement.textContent;
+    buttonElement.textContent = 'Liking...';
+    
     try {
         const response = await fetch('/text/like', {
             method: 'POST',
@@ -114,9 +119,13 @@ async function handleLikeClick(paragraphId, buttonElement) {
             buttonElement.textContent = `Likes: ${result.data.likes}`;
         } else {
             console.error('Failed to like paragraph:', result.message);
+            buttonElement.textContent = originalText;
         }
     } catch (error) {
         console.error('Error liking paragraph:', error);
+        buttonElement.textContent = originalText;
+    } finally {
+        buttonElement.disabled = false;
     }
 }
 
@@ -137,7 +146,13 @@ function handleScroll() {
 function showEndMessage() {
     const dataContainer = document.getElementById('data');
     
+    // Check if end message already exists to avoid duplicates
+    if (dataContainer.querySelector('.end-message')) {
+        return;
+    }
+    
     const endDiv = document.createElement('div');
+    endDiv.className = 'end-message';
     endDiv.innerHTML = '<b>You have reached the end</b>';
     
     dataContainer.appendChild(endDiv);

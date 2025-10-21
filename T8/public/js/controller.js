@@ -13,7 +13,7 @@ let isLoading = false;
 let lastLoadTime = 0;
 let paragraphLikes = {}; // Track like state for each paragraph
 let paragraphClickCount = {}; // Track number of clicks for each paragraph
-// Remove the first load tracking since we should load 5 initially
+let loadedParagraphIds = new Set(); // Track which paragraph IDs we've already loaded
 const MAX_PARAGRAPHS = 46;
 
 // Initialize the page when DOM is loaded
@@ -31,8 +31,8 @@ async function loadParagraphs() {
         return;
     }
     
-    // Check if we've reached the maximum number of paragraphs
-    if (currentParagraph > MAX_PARAGRAPHS) {
+    // Check if we already have 46 paragraphs loaded
+    if (loadedParagraphIds.size >= MAX_PARAGRAPHS) {
         hasMoreContent = false;
         showEndMessage();
         window.removeEventListener('scroll', handleScroll);
@@ -55,8 +55,8 @@ async function loadParagraphs() {
                 // Update state - increment by the number of paragraphs actually loaded
                 currentParagraph += result.data.length;
                 
-                // Stop loading if we've reached 46 paragraphs or server says no more content
-                if (currentParagraph > MAX_PARAGRAPHS || !result.next) {
+                // Check if we have all paragraphs 1-46 or server says no more content
+                if (loadedParagraphIds.size >= MAX_PARAGRAPHS || !result.next) {
                     hasMoreContent = false;
                     showEndMessage();
                     window.removeEventListener('scroll', handleScroll);
@@ -75,35 +75,52 @@ async function loadParagraphs() {
     }
 }
 
-// Function to render paragraphs in the DOM
-function renderParagraphs(paragraphs) {
+// Function to render a single paragraph in the DOM
+function renderSingleParagraph(paragraph) {
+    // Only render if we haven't already loaded this paragraph ID
+    if (loadedParagraphIds.has(paragraph.id)) {
+        return;
+    }
+    
     const dataContainer = document.getElementById('data');
     
+    // Create the paragraph container div
+    const paragraphDiv = document.createElement('div');
+    paragraphDiv.id = `paragraph_${paragraph.id}`;
+    
+    // Create the paragraph content
+    const paragraphContent = document.createElement('p');
+    paragraphContent.innerHTML = `${paragraph.content} <b>(Paragraph: ${paragraph.id})</b>`;
+    
+    // Create the like button
+    const likeButton = document.createElement('button');
+    likeButton.className = 'btn like';
+    likeButton.textContent = `Likes: ${paragraph.likes}`;
+    likeButton.addEventListener('click', () => handleLikeClick(paragraph.id, likeButton));
+    
+    // Initialize like state and click count for this paragraph
+    paragraphLikes[paragraph.id] = false;
+    paragraphClickCount[paragraph.id] = 0;
+    
+    // Append elements to paragraph div
+    paragraphDiv.appendChild(paragraphContent);
+    paragraphDiv.appendChild(likeButton);
+    
+    // Append paragraph div to data container
+    dataContainer.appendChild(paragraphDiv);
+    
+    // Track that we've loaded this paragraph ID
+    loadedParagraphIds.add(paragraph.id);
+}
+
+// Function to render paragraphs in the DOM
+function renderParagraphs(paragraphs) {
     paragraphs.forEach(paragraph => {
-        // Create the paragraph container div
-        const paragraphDiv = document.createElement('div');
-        paragraphDiv.id = `paragraph_${paragraph.id}`;
-        
-        // Create the paragraph content
-        const paragraphContent = document.createElement('p');
-        paragraphContent.innerHTML = `${paragraph.content} <b>(Paragraph: ${paragraph.id})</b>`;
-        
-        // Create the like button
-        const likeButton = document.createElement('button');
-        likeButton.className = 'btn like';
-        likeButton.textContent = `Likes: ${paragraph.likes}`;
-        likeButton.addEventListener('click', () => handleLikeClick(paragraph.id, likeButton));
-        
-        // Initialize like state and click count for this paragraph
-        paragraphLikes[paragraph.id] = false;
-        paragraphClickCount[paragraph.id] = 0;
-        
-        // Append elements to paragraph div
-        paragraphDiv.appendChild(paragraphContent);
-        paragraphDiv.appendChild(likeButton);
-        
-        // Append paragraph div to data container
-        dataContainer.appendChild(paragraphDiv);
+        // Only render if we haven't already loaded this paragraph ID
+        if (!loadedParagraphIds.has(paragraph.id)) {
+            renderSingleParagraph(paragraph);
+            loadedParagraphIds.add(paragraph.id);
+        }
     });
 }
 

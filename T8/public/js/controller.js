@@ -10,6 +10,7 @@
 let currentParagraph = 1;
 let hasMoreContent = true;
 let isLoading = false;
+let scrollTimeout = null;
 
 // Initialize the page when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
@@ -33,7 +34,7 @@ async function loadParagraphs() {
         const result = await response.json();
         
         if (response.ok) {
-            // Only render if we have data and there's more content expected
+            // Only render if we have data
             if (result.data && result.data.length > 0) {
                 renderParagraphs(result.data);
                 
@@ -41,14 +42,17 @@ async function loadParagraphs() {
                 currentParagraph += result.data.length;
                 hasMoreContent = result.next;
                 
-                // If no more content, show end message
+                // If no more content, show end message and stop loading
                 if (!hasMoreContent) {
                     showEndMessage();
+                    // Remove scroll listener to prevent further loading
+                    window.removeEventListener('scroll', handleScroll);
                 }
             } else {
                 // No data returned, mark as no more content
                 hasMoreContent = false;
                 showEndMessage();
+                window.removeEventListener('scroll', handleScroll);
             }
         } else {
             console.error('Failed to load paragraphs:', result.message);
@@ -114,13 +118,21 @@ async function handleLikeClick(paragraphId, buttonElement) {
 
 // Function to handle scroll events for infinite scrolling
 function handleScroll() {
-    // Check if user has scrolled to the bottom of the page
-    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 10) {
-        // Load more content if available
-        if (hasMoreContent && !isLoading) {
-            loadParagraphs();
-        }
+    // Clear any existing timeout
+    if (scrollTimeout) {
+        clearTimeout(scrollTimeout);
     }
+    
+    // Debounce the scroll event
+    scrollTimeout = setTimeout(() => {
+        // Check if user has scrolled to the bottom of the page
+        if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 1) {
+            // Load more content if available
+            if (hasMoreContent && !isLoading) {
+                loadParagraphs();
+            }
+        }
+    }, 100); // 100ms debounce
 }
 
 // Function to show end message when no more content is available

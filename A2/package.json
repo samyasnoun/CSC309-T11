@@ -1,35 +1,25 @@
 {
-  "name": "a2-loyalty",
-  "version": "1.0.0",
-  "description": "REST API for loyalty program",
+  "name": "cssu-rewards",
+  "version": "0.0.1",
+  "description": "CSSU Reward System",
   "main": "index.js",
-  "type": "commonjs",
   "scripts": {
-    "dev": "node --watch index.js 8000",
-    "clean": "npm run prisma:reset",
-    "prisma:reset": "rimraf prisma/dev.db && rimraf node_modules/.prisma && npx prisma migrate reset --force",
-    "prisma:seed": "node prisma/seed.js",
-    "test": "node run_assertions.js",
-    "test:assertions": "node run_assertions.js"
+    "createsuperuser": "node prisma/createsu.js",
+    "clean": "rm -rf prisma/dev.db* node_modules package-lock.json prisma/migrations/"
   },
-  "prisma": {
-    "seed": "node prisma/seed.js"
-  },
+  "author": "CSC309 Student, Winter 2025",
+  "license": "ISC",
   "dependencies": {
-    "express": "^4.18.2",
-    "cors": "^2.8.5",
-    "multer": "^1.4.5-lts.1",
-    "jsonwebtoken": "^9.0.2",
-    "express-jwt": "^8.4.1",
-    "uuid": "^9.0.1",
-    "sqlite3": "^5.1.6",
-    "@prisma/client": "^5.7.1",
-    "prisma": "^5.7.1",
+    "@prisma/client": "^6.4.1",
     "bcrypt": "^5.1.1",
-    "dotenv": "^16.3.1",
-    "rimraf": "^5.0.5"
-  },
-  "keywords": ["api", "rest", "loyalty"],
-  "author": "",
-  "license": "ISC"
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "express-jwt": "^8.5.1",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.1",
+    "prisma": "^6.4.1",
+    "sqlite3": "^5.1.7",
+    "uuid": "^11.1.0",
+    "zod": "^3.24.2"
+  }
 }

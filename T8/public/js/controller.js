@@ -200,5 +200,3 @@ function showEndMessage() {
     endDiv.innerHTML = '<b>You have reached the end</b>';
     dataContainer.appendChild(endDiv);
 }
-
-

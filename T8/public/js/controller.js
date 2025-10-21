@@ -11,6 +11,7 @@ let currentParagraph = 1;
 let hasMoreContent = true;
 let isLoading = false;
 let lastLoadTime = 0;
+const NUM_PARAGRAPHS_PER_REQUEST = 5;
 
 // Initialize the page when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
@@ -24,6 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Function to load paragraphs from the server
 async function loadParagraphs() {
     if (isLoading || !hasMoreContent) {
+        console.log('Skipping load: isLoading=', isLoading, 'hasMoreContent=', hasMoreContent);
         return;
     }
     
@@ -44,12 +46,20 @@ async function loadParagraphs() {
                 currentParagraph += result.data.length;
                 hasMoreContent = result.next;
                 
+                // Additional protection: if we get fewer paragraphs than expected, 
+                // we've reached the end
+                if (result.data.length < NUM_PARAGRAPHS_PER_REQUEST) {
+                    hasMoreContent = false;
+                }
+                
                 // If no more content, show end message and stop all loading
                 if (!hasMoreContent) {
                     console.log('No more content, showing end message');
                     showEndMessage();
                     // Remove scroll listener to prevent any further loads
                     window.removeEventListener('scroll', handleScroll);
+                    // Set hasMoreContent to false to prevent any race conditions
+                    hasMoreContent = false;
                 }
             } else {
                 // No data returned, mark as no more content
@@ -137,6 +147,7 @@ function handleScroll() {
         const now = Date.now();
         if (hasMoreContent && !isLoading && (now - lastLoadTime) > 200) {
             lastLoadTime = now;
+            console.log('Scroll triggered load request');
             loadParagraphs();
         }
     }

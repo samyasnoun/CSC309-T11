@@ -446,6 +446,261 @@ class EventController {
       next(error);
     }
   }
+  
+  // Delete event
+  static async deleteEvent(req, res, next) {
+    try {
+      const { eventId } = req.params;
+      const requestingUser = {
+        id: req.auth.userId,
+        role: req.auth.role
+      };
+      
+      // Validate event ID
+      if (!eventId || isNaN(parseInt(eventId))) {
+        return res.status(400).json({ error: 'Valid event ID is required' });
+      }
+      
+      // Delete event
+      await AuthService.deleteEvent(parseInt(eventId), requestingUser);
+      
+      res.status(204).send();
+    } catch (error) {
+      if (error.message === 'Event not found') {
+        return res.status(404).json({ error: 'Event not found' });
+      }
+      if (error.message.includes('already been published')) {
+        return res.status(400).json({ error: error.message });
+      }
+      next(error);
+    }
+  }
+  
+  // Add organizer
+  static async addOrganizer(req, res, next) {
+    try {
+      const { eventId } = req.params;
+      const { utorid } = req.body;
+      const requestingUser = {
+        id: req.auth.userId,
+        role: req.auth.role
+      };
+      
+      // Validate event ID
+      if (!eventId || isNaN(parseInt(eventId))) {
+        return res.status(400).json({ error: 'Valid event ID is required' });
+      }
+      
+      // Validate utorid
+      if (!utorid) {
+        return res.status(400).json({ error: 'Utorid is required' });
+      }
+      
+      // Add organizer
+      const result = await AuthService.addEventOrganizer(
+        parseInt(eventId), 
+        utorid, 
+        requestingUser
+      );
+      
+      res.status(201).json(result);
+    } catch (error) {
+      if (error.message === 'Event not found') {
+        return res.status(404).json({ error: 'Event not found' });
+      }
+      if (error.message.includes('registered as a guest') || 
+          error.message.includes('has ended')) {
+        return res.status(400).json({ error: error.message });
+      }
+      if (error.message === 'User not found') {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      next(error);
+    }
+  }
+  
+  // Remove organizer
+  static async removeOrganizer(req, res, next) {
+    try {
+      const { eventId, userId } = req.params;
+      const requestingUser = {
+        id: req.auth.userId,
+        role: req.auth.role
+      };
+      
+      // Validate IDs
+      if (!eventId || isNaN(parseInt(eventId))) {
+        return res.status(400).json({ error: 'Valid event ID is required' });
+      }
+      if (!userId || isNaN(parseInt(userId))) {
+        return res.status(400).json({ error: 'Valid user ID is required' });
+      }
+      
+      // Remove organizer
+      await AuthService.removeEventOrganizer(
+        parseInt(eventId), 
+        parseInt(userId), 
+        requestingUser
+      );
+      
+      res.status(204).send();
+    } catch (error) {
+      if (error.message === 'Event not found') {
+        return res.status(404).json({ error: 'Event not found' });
+      }
+      if (error.message === 'Organizer not found') {
+        return res.status(404).json({ error: 'Organizer not found' });
+      }
+      next(error);
+    }
+  }
+  
+  // Add guest
+  static async addGuest(req, res, next) {
+    try {
+      const { eventId } = req.params;
+      const { utorid } = req.body;
+      const requestingUser = {
+        id: req.auth.userId,
+        role: req.auth.role
+      };
+      
+      // Validate event ID
+      if (!eventId || isNaN(parseInt(eventId))) {
+        return res.status(400).json({ error: 'Valid event ID is required' });
+      }
+      
+      // Validate utorid
+      if (!utorid) {
+        return res.status(400).json({ error: 'Utorid is required' });
+      }
+      
+      // Add guest
+      const result = await AuthService.addEventGuest(
+        parseInt(eventId), 
+        utorid, 
+        requestingUser
+      );
+      
+      res.status(201).json(result);
+    } catch (error) {
+      if (error.message === 'Event not found') {
+        return res.status(404).json({ error: 'Event not found' });
+      }
+      if (error.message.includes('registered as an organizer') || 
+          error.message.includes('full') || 
+          error.message.includes('ended')) {
+        return res.status(400).json({ error: error.message });
+      }
+      if (error.message === 'User not found') {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      next(error);
+    }
+  }
+  
+  // Remove guest
+  static async removeGuest(req, res, next) {
+    try {
+      const { eventId, userId } = req.params;
+      const requestingUser = {
+        id: req.auth.userId,
+        role: req.auth.role
+      };
+      
+      // Validate IDs
+      if (!eventId || isNaN(parseInt(eventId))) {
+        return res.status(400).json({ error: 'Valid event ID is required' });
+      }
+      if (!userId || isNaN(parseInt(userId))) {
+        return res.status(400).json({ error: 'Valid user ID is required' });
+      }
+      
+      // Remove guest
+      await AuthService.removeEventGuest(
+        parseInt(eventId), 
+        parseInt(userId), 
+        requestingUser
+      );
+      
+      res.status(204).send();
+    } catch (error) {
+      if (error.message === 'Event not found') {
+        return res.status(404).json({ error: 'Event not found' });
+      }
+      if (error.message === 'Guest not found') {
+        return res.status(404).json({ error: 'Guest not found' });
+      }
+      next(error);
+    }
+  }
+  
+  // Self RSVP
+  static async selfRSVP(req, res, next) {
+    try {
+      const { eventId } = req.params;
+      const requestingUser = {
+        id: req.auth.userId,
+        role: req.auth.role
+      };
+      
+      // Validate event ID
+      if (!eventId || isNaN(parseInt(eventId))) {
+        return res.status(400).json({ error: 'Valid event ID is required' });
+      }
+      
+      // Self RSVP
+      const result = await AuthService.selfRSVPEvent(
+        parseInt(eventId), 
+        requestingUser
+      );
+      
+      res.status(201).json(result);
+    } catch (error) {
+      if (error.message === 'Event not found') {
+        return res.status(404).json({ error: 'Event not found' });
+      }
+      if (error.message.includes('already on the guest list') || 
+          error.message.includes('full') || 
+          error.message.includes('ended')) {
+        return res.status(400).json({ error: error.message });
+      }
+      next(error);
+    }
+  }
+  
+  // Self un-RSVP
+  static async selfUnRSVP(req, res, next) {
+    try {
+      const { eventId } = req.params;
+      const requestingUser = {
+        id: req.auth.userId,
+        role: req.auth.role
+      };
+      
+      // Validate event ID
+      if (!eventId || isNaN(parseInt(eventId))) {
+        return res.status(400).json({ error: 'Valid event ID is required' });
+      }
+      
+      // Self un-RSVP
+      await AuthService.selfUnRSVPEvent(
+        parseInt(eventId), 
+        requestingUser
+      );
+      
+      res.status(204).send();
+    } catch (error) {
+      if (error.message === 'Event not found') {
+        return res.status(404).json({ error: 'Event not found' });
+      }
+      if (error.message.includes('did not RSVP') || 
+          error.message.includes('ended')) {
+        return res.status(400).json({ error: error.message });
+      }
+      next(error);
+    }
+  }
 }
 
 module.exports = EventController;

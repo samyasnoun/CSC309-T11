@@ -1745,6 +1745,876 @@ class AuthService {
     
     return true;
   }
+  
+  // Get single user with role-aware field projection
+  static async getUser(userId, requestingUser) {
+    const requestingUserRole = requestingUser.role;
+    
+    if (requestingUserRole === 'cashier') {
+      // Cashiers can only see limited information
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          id: true,
+          utorid: true,
+          name: true,
+          points: true,
+          verified: true,
+          promotions: {
+            where: {
+              usedAt: null,
+              promotion: {
+                startAt: { lte: new Date() },
+                endAt: { gte: new Date() }
+              }
+            },
+            select: {
+              promotion: {
+                select: {
+                  id: true,
+                  name: true,
+                  minSpending: true,
+                  rate: true,
+                  points: true
+                }
+              }
+            }
+          }
+        }
+      });
+      
+      if (user) {
+        return {
+          id: user.id,
+          utorid: user.utorid,
+          name: user.name,
+          points: user.points,
+          verified: user.verified,
+          promotions: user.promotions.map(p => ({
+            id: p.promotion.id,
+            name: p.promotion.name,
+            minSpending: p.promotion.minSpending,
+            rate: p.promotion.rate,
+            points: p.promotion.points
+          }))
+        };
+      }
+      return user;
+    } else {
+      // Managers and superusers can see full information
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          id: true,
+          utorid: true,
+          name: true,
+          email: true,
+          birthday: true,
+          role: true,
+          points: true,
+          createdAt: true,
+          lastLogin: true,
+          verified: true,
+          avatarUrl: true,
+          promotions: {
+            where: {
+              usedAt: null,
+              promotion: {
+                startAt: { lte: new Date() },
+                endAt: { gte: new Date() }
+              }
+            },
+            select: {
+              promotion: {
+                select: {
+                  id: true,
+                  name: true,
+                  minSpending: true,
+                  rate: true,
+                  points: true
+                }
+              }
+            }
+          }
+        }
+      });
+      
+      if (user) {
+        return {
+          id: user.id,
+          utorid: user.utorid,
+          name: user.name,
+          email: user.email,
+          birthday: user.birthday,
+          role: user.role,
+          points: user.points,
+          createdAt: user.createdAt,
+          lastLogin: user.lastLogin,
+          verified: user.verified,
+          avatarUrl: user.avatarUrl,
+          promotions: user.promotions.map(p => ({
+            id: p.promotion.id,
+            name: p.promotion.name,
+            minSpending: p.promotion.minSpending,
+            rate: p.promotion.rate,
+            points: p.promotion.points
+          }))
+        };
+      }
+      return user;
+    }
+  }
+  
+  // Create promotion
+  static async createPromotion(promotionData, requestingUser) {
+    const { name, description, type, startTime, endTime, minSpending, rate, points } = promotionData;
+    const requestingUserId = requestingUser.id;
+    const requestingUserRole = requestingUser.role;
+    
+    // Validate required fields
+    if (!name || !description || !type || !startTime || !endTime) {
+      throw new Error('Name, description, type, startTime, and endTime are required');
+    }
+    
+    // Validate type
+    if (!['automatic', 'one-time'].includes(type)) {
+      throw new Error('Type must be either "automatic" or "one-time"');
+    }
+    
+    // Validate times
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+    
+    if (start >= end) {
+      throw new Error('End time must be after start time');
+    }
+    
+    if (start <= new Date()) {
+      throw new Error('Start time must not be in the past');
+    }
+    
+    // Create promotion
+    const promotion = await prisma.promotion.create({
+      data: {
+        name,
+        description,
+        type,
+        startAt: start,
+        endAt: end,
+        minSpendingCents: minSpending ? Math.round(minSpending * 100) : null,
+        rateMultiplier: rate || null,
+        oneTimePoints: points || null
+      }
+    });
+    
+    return {
+      id: promotion.id,
+      name: promotion.name,
+      description: promotion.description,
+      type: promotion.type,
+      startTime: promotion.startAt.toISOString(),
+      endTime: promotion.endAt.toISOString(),
+      minSpending: promotion.minSpendingCents ? promotion.minSpendingCents / 100 : null,
+      rate: promotion.rateMultiplier,
+      points: promotion.oneTimePoints
+    };
+  }
+  
+  // Get promotions with role-aware filtering
+  static async getPromotions(filters = {}, requestingUser) {
+    const { name, type, started, ended, page = 1, limit = 10 } = filters;
+    const requestingUserRole = requestingUser.role;
+    
+    // Build where clause
+    const where = {};
+    
+    if (name) {
+      where.name = { contains: name };
+    }
+    
+    if (type) {
+      where.type = type;
+    }
+    
+    if (requestingUserRole === 'regular') {
+      // Regular users can only see active promotions they haven't used
+      where.startAt = { lte: new Date() };
+      where.endAt = { gte: new Date() };
+    } else {
+      // Managers can see all promotions with additional filters
+      if (started !== undefined) {
+        if (started === 'true') {
+          where.startAt = { lte: new Date() };
+        } else {
+          where.startAt = { gt: new Date() };
+        }
+      }
+      
+      if (ended !== undefined) {
+        if (ended === 'true') {
+          where.endAt = { lt: new Date() };
+        } else {
+          where.endAt = { gte: new Date() };
+        }
+      }
+    }
+    
+    // Get total count
+    const count = await prisma.promotion.count({ where });
+    
+    // Get promotions
+    const promotions = await prisma.promotion.findMany({
+      where,
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: { startAt: 'desc' }
+    });
+    
+    // Format results
+    const results = promotions.map(promotion => ({
+      id: promotion.id,
+      name: promotion.name,
+      type: promotion.type,
+      endTime: promotion.endAt.toISOString(),
+      minSpending: promotion.minSpendingCents ? promotion.minSpendingCents / 100 : null,
+      rate: promotion.rateMultiplier,
+      points: promotion.oneTimePoints
+    }));
+    
+    return { count, results };
+  }
+  
+  // Get single promotion
+  static async getPromotion(promotionId, requestingUser) {
+    const requestingUserRole = requestingUser.role;
+    
+    const promotion = await prisma.promotion.findUnique({
+      where: { id: promotionId }
+    });
+    
+    if (!promotion) {
+      throw new Error('Promotion not found');
+    }
+    
+    // Regular users can only see active promotions
+    if (requestingUserRole === 'regular') {
+      const now = new Date();
+      if (promotion.startAt > now || promotion.endAt < now) {
+        throw new Error('Promotion not found');
+      }
+    }
+    
+    return {
+      id: promotion.id,
+      name: promotion.name,
+      description: promotion.description,
+      type: promotion.type,
+      endTime: promotion.endAt.toISOString(),
+      minSpending: promotion.minSpendingCents ? promotion.minSpendingCents / 100 : null,
+      rate: promotion.rateMultiplier,
+      points: promotion.oneTimePoints
+    };
+  }
+  
+  // Update promotion
+  static async updatePromotion(promotionId, updateData, requestingUser) {
+    const { name, description, type, startTime, endTime, minSpending, rate, points } = updateData;
+    
+    // Check if promotion exists
+    const existingPromotion = await prisma.promotion.findUnique({
+      where: { id: promotionId }
+    });
+    
+    if (!existingPromotion) {
+      throw new Error('Promotion not found');
+    }
+    
+    // Validate times if provided
+    if (startTime || endTime) {
+      const start = startTime ? new Date(startTime) : existingPromotion.startAt;
+      const end = endTime ? new Date(endTime) : existingPromotion.endAt;
+      
+      if (start >= end) {
+        throw new Error('End time must be after start time');
+      }
+      
+      if (start <= new Date()) {
+        throw new Error('Start time must not be in the past');
+      }
+    }
+    
+    // Update promotion
+    const updatedPromotion = await prisma.promotion.update({
+      where: { id: promotionId },
+      data: {
+        ...(name && { name }),
+        ...(description && { description }),
+        ...(type && { type }),
+        ...(startTime && { startAt: new Date(startTime) }),
+        ...(endTime && { endAt: new Date(endTime) }),
+        ...(minSpending !== undefined && { minSpendingCents: minSpending ? Math.round(minSpending * 100) : null }),
+        ...(rate !== undefined && { rateMultiplier: rate }),
+        ...(points !== undefined && { oneTimePoints: points })
+      }
+    });
+    
+    return {
+      id: updatedPromotion.id,
+      name: updatedPromotion.name,
+      type: updatedPromotion.type,
+      endTime: updatedPromotion.endAt.toISOString()
+    };
+  }
+  
+  // Delete promotion
+  static async deletePromotion(promotionId, requestingUser) {
+    // Check if promotion exists
+    const existingPromotion = await prisma.promotion.findUnique({
+      where: { id: promotionId }
+    });
+    
+    if (!existingPromotion) {
+      throw new Error('Promotion not found');
+    }
+    
+    // Check if promotion has started
+    if (existingPromotion.startAt <= new Date()) {
+      throw new Error('Cannot delete promotion that has already started');
+    }
+    
+    // Delete promotion
+    await prisma.promotion.delete({
+      where: { id: promotionId }
+    });
+  }
+  
+  // Get all transactions with filtering
+  static async getTransactions(filters = {}) {
+    const {
+      name = '',
+      createdBy = '',
+      suspicious = '',
+      promotionId = '',
+      type = '',
+      relatedId = '',
+      amount = '',
+      operator = '',
+      page = 1,
+      limit = 10
+    } = filters;
+    
+    // Build where clause
+    const where = {};
+    
+    if (name) {
+      where.OR = [
+        { targetUser: { utorid: { contains: name } } },
+        { targetUser: { name: { contains: name } } }
+      ];
+    }
+    
+    if (createdBy) {
+      where.createdBy = { utorid: { contains: createdBy } };
+    }
+    
+    if (suspicious !== '') {
+      where.suspicious = suspicious === 'true';
+    }
+    
+    if (promotionId) {
+      where.promotions = {
+        some: { promotionId: parseInt(promotionId) }
+      };
+    }
+    
+    if (type) {
+      where.type = type;
+    }
+    
+    if (relatedId) {
+      where.relatedId = parseInt(relatedId);
+    }
+    
+    if (amount && operator) {
+      const amountValue = parseInt(amount);
+      if (operator === 'gte') {
+        where.amount = { gte: amountValue };
+      } else if (operator === 'lte') {
+        where.amount = { lte: amountValue };
+      }
+    }
+    
+    // Get total count
+    const count = await prisma.transaction.count({ where });
+    
+    // Get transactions
+    const transactions = await prisma.transaction.findMany({
+      where,
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        createdBy: {
+          select: { id: true, utorid: true, name: true }
+        },
+        targetUser: {
+          select: { id: true, utorid: true, name: true }
+        },
+        promotions: {
+          include: {
+            promotion: {
+              select: { id: true, name: true }
+            }
+          }
+        }
+      }
+    });
+    
+    // Format results
+    const results = transactions.map(transaction => ({
+      id: transaction.id,
+      utorid: transaction.targetUser.utorid,
+      amount: transaction.amount,
+      type: transaction.type,
+      spent: transaction.spent,
+      promotionIds: transaction.promotions.map(p => p.promotionId),
+      suspicious: transaction.suspicious,
+      remark: transaction.remark,
+      createdBy: transaction.createdBy.utorid,
+      relatedId: transaction.relatedId,
+      redeemed: transaction.type === 'redemption' ? Math.abs(transaction.amount) : undefined
+    }));
+    
+    return { count, results };
+  }
+  
+  // Flag transaction as suspicious
+  static async flagTransactionAsSuspicious(transactionId, suspicious) {
+    // Get transaction
+    const transaction = await prisma.transaction.findUnique({
+      where: { id: transactionId },
+      include: { targetUser: true }
+    });
+    
+    if (!transaction) {
+      throw new Error('Transaction not found');
+    }
+    
+    // Update transaction
+    const updatedTransaction = await prisma.transaction.update({
+      where: { id: transactionId },
+      data: { suspicious }
+    });
+    
+    // If marking as suspicious, deduct points
+    if (suspicious && !transaction.suspicious) {
+      await prisma.user.update({
+        where: { id: transaction.targetUserId },
+        data: {
+          points: { decrement: transaction.amount }
+        }
+      });
+    }
+    
+    // If unmarking as suspicious, add points back
+    if (!suspicious && transaction.suspicious) {
+      await prisma.user.update({
+        where: { id: transaction.targetUserId },
+        data: {
+          points: { increment: transaction.amount }
+        }
+      });
+    }
+    
+    return {
+      id: updatedTransaction.id,
+      utorid: transaction.targetUser.utorid,
+      type: updatedTransaction.type,
+      spent: updatedTransaction.spent,
+      amount: updatedTransaction.amount,
+      promotionIds: [],
+      suspicious: updatedTransaction.suspicious,
+      remark: updatedTransaction.remark,
+      createdBy: transaction.createdBy.utorid
+    };
+  }
+  
+  // Process transaction
+  static async processTransaction(transactionId) {
+    // Get transaction
+    const transaction = await prisma.transaction.findUnique({
+      where: { id: transactionId },
+      include: { targetUser: true }
+    });
+    
+    if (!transaction) {
+      throw new Error('Transaction not found');
+    }
+    
+    if (transaction.type !== 'redemption') {
+      throw new Error('Transaction is not of type "redemption"');
+    }
+    
+    if (transaction.processed) {
+      throw new Error('Transaction has already been processed');
+    }
+    
+    // Update transaction
+    const updatedTransaction = await prisma.transaction.update({
+      where: { id: transactionId },
+      data: { 
+        processed: true,
+        processedAt: new Date()
+      }
+    });
+    
+    // Deduct points from user
+    await prisma.user.update({
+      where: { id: transaction.targetUserId },
+      data: {
+        points: { decrement: Math.abs(transaction.amount) }
+      }
+    });
+    
+    return {
+      id: updatedTransaction.id,
+      utorid: transaction.targetUser.utorid,
+      type: updatedTransaction.type,
+      processedBy: transaction.createdBy.utorid,
+      amount: updatedTransaction.amount,
+      remark: updatedTransaction.remark,
+      createdBy: transaction.createdBy.utorid
+    };
+  }
+  
+  // Delete event
+  static async deleteEvent(eventId, requestingUser) {
+    // Check if event exists
+    const event = await prisma.event.findUnique({
+      where: { id: eventId }
+    });
+    
+    if (!event) {
+      throw new Error('Event not found');
+    }
+    
+    // Check if event has been published
+    if (event.published) {
+      throw new Error('Cannot delete event that has already been published');
+    }
+    
+    // Delete event
+    await prisma.event.delete({
+      where: { id: eventId }
+    });
+  }
+  
+  // Add event organizer
+  static async addEventOrganizer(eventId, utorid, requestingUser) {
+    // Check if event exists
+    const event = await prisma.event.findUnique({
+      where: { id: eventId }
+    });
+    
+    if (!event) {
+      throw new Error('Event not found');
+    }
+    
+    // Check if event has ended
+    if (event.endTime < new Date()) {
+      throw new Error('Event has ended');
+    }
+    
+    // Find user by utorid
+    const user = await prisma.user.findUnique({
+      where: { utorid }
+    });
+    
+    if (!user) {
+      throw new Error('User not found');
+    }
+    
+    // Check if user is already a guest
+    const existingGuest = await prisma.eventGuest.findFirst({
+      where: {
+        eventId,
+        userId: user.id
+      }
+    });
+    
+    if (existingGuest) {
+      throw new Error('User is registered as a guest to the event (remove user as guest first, then retry)');
+    }
+    
+    // Add organizer
+    await prisma.eventOrganizer.create({
+      data: {
+        eventId,
+        userId: user.id
+      }
+    });
+    
+    // Get updated event with organizers
+    const updatedEvent = await prisma.event.findUnique({
+      where: { id: eventId },
+      include: {
+        organizers: {
+          include: {
+            user: {
+              select: { id: true, utorid: true, name: true }
+            }
+          }
+        }
+      }
+    });
+    
+    return {
+      id: updatedEvent.id,
+      name: updatedEvent.name,
+      location: updatedEvent.location,
+      organizers: updatedEvent.organizers.map(org => ({
+        id: org.user.id,
+        utorid: org.user.utorid,
+        name: org.user.name
+      }))
+    };
+  }
+  
+  // Remove event organizer
+  static async removeEventOrganizer(eventId, userId, requestingUser) {
+    // Check if event exists
+    const event = await prisma.event.findUnique({
+      where: { id: eventId }
+    });
+    
+    if (!event) {
+      throw new Error('Event not found');
+    }
+    
+    // Check if organizer exists
+    const organizer = await prisma.eventOrganizer.findFirst({
+      where: {
+        eventId,
+        userId
+      }
+    });
+    
+    if (!organizer) {
+      throw new Error('Organizer not found');
+    }
+    
+    // Remove organizer
+    await prisma.eventOrganizer.delete({
+      where: { id: organizer.id }
+    });
+  }
+  
+  // Add event guest
+  static async addEventGuest(eventId, utorid, requestingUser) {
+    // Check if event exists
+    const event = await prisma.event.findUnique({
+      where: { id: eventId }
+    });
+    
+    if (!event) {
+      throw new Error('Event not found');
+    }
+    
+    // Check if event has ended
+    if (event.endTime < new Date()) {
+      throw new Error('Event has ended');
+    }
+    
+    // Check if event is full
+    if (event.capacity && event.capacity > 0) {
+      const guestCount = await prisma.eventGuest.count({
+        where: { eventId }
+      });
+      
+      if (guestCount >= event.capacity) {
+        throw new Error('Event is full');
+      }
+    }
+    
+    // Find user by utorid
+    const user = await prisma.user.findUnique({
+      where: { utorid }
+    });
+    
+    if (!user) {
+      throw new Error('User not found');
+    }
+    
+    // Check if user is already an organizer
+    const existingOrganizer = await prisma.eventOrganizer.findFirst({
+      where: {
+        eventId,
+        userId: user.id
+      }
+    });
+    
+    if (existingOrganizer) {
+      throw new Error('User is registered as an organizer (remove user as organizer first, then retry)');
+    }
+    
+    // Add guest
+    await prisma.eventGuest.create({
+      data: {
+        eventId,
+        userId: user.id
+      }
+    });
+    
+    // Get updated event
+    const updatedEvent = await prisma.event.findUnique({
+      where: { id: eventId }
+    });
+    
+    return {
+      id: updatedEvent.id,
+      name: updatedEvent.name,
+      location: updatedEvent.location,
+      guestAdded: {
+        id: user.id,
+        utorid: user.utorid,
+        name: user.name
+      },
+      numGuests: await prisma.eventGuest.count({
+        where: { eventId }
+      })
+    };
+  }
+  
+  // Remove event guest
+  static async removeEventGuest(eventId, userId, requestingUser) {
+    // Check if event exists
+    const event = await prisma.event.findUnique({
+      where: { id: eventId }
+    });
+    
+    if (!event) {
+      throw new Error('Event not found');
+    }
+    
+    // Check if guest exists
+    const guest = await prisma.eventGuest.findFirst({
+      where: {
+        eventId,
+        userId
+      }
+    });
+    
+    if (!guest) {
+      throw new Error('Guest not found');
+    }
+    
+    // Remove guest
+    await prisma.eventGuest.delete({
+      where: { id: guest.id }
+    });
+  }
+  
+  // Self RSVP to event
+  static async selfRSVPEvent(eventId, requestingUser) {
+    // Check if event exists
+    const event = await prisma.event.findUnique({
+      where: { id: eventId }
+    });
+    
+    if (!event) {
+      throw new Error('Event not found');
+    }
+    
+    // Check if event has ended
+    if (event.endTime < new Date()) {
+      throw new Error('Event has ended');
+    }
+    
+    // Check if event is full
+    if (event.capacity && event.capacity > 0) {
+      const guestCount = await prisma.eventGuest.count({
+        where: { eventId }
+      });
+      
+      if (guestCount >= event.capacity) {
+        throw new Error('Event is full');
+      }
+    }
+    
+    // Check if user is already a guest
+    const existingGuest = await prisma.eventGuest.findFirst({
+      where: {
+        eventId,
+        userId: requestingUser.id
+      }
+    });
+    
+    if (existingGuest) {
+      throw new Error('User is already on the guest list');
+    }
+    
+    // Add guest
+    await prisma.eventGuest.create({
+      data: {
+        eventId,
+        userId: requestingUser.id
+      }
+    });
+    
+    // Get user info
+    const user = await prisma.user.findUnique({
+      where: { id: requestingUser.id },
+      select: { id: true, utorid: true, name: true }
+    });
+    
+    return {
+      id: event.id,
+      name: event.name,
+      location: event.location,
+      guestAdded: {
+        id: user.id,
+        utorid: user.utorid,
+        name: user.name
+      },
+      numGuests: await prisma.eventGuest.count({
+        where: { eventId }
+      })
+    };
+  }
+  
+  // Self un-RSVP from event
+  static async selfUnRSVPEvent(eventId, requestingUser) {
+    // Check if event exists
+    const event = await prisma.event.findUnique({
+      where: { id: eventId }
+    });
+    
+    if (!event) {
+      throw new Error('Event not found');
+    }
+    
+    // Check if event has ended
+    if (event.endTime < new Date()) {
+      throw new Error('Event has ended');
+    }
+    
+    // Check if user is a guest
+    const guest = await prisma.eventGuest.findFirst({
+      where: {
+        eventId,
+        userId: requestingUser.id
+      }
+    });
+    
+    if (!guest) {
+      throw new Error('User did not RSVP to this event');
+    }
+    
+    // Remove guest
+    await prisma.eventGuest.delete({
+      where: { id: guest.id }
+    });
+  }
 }
 
 module.exports = AuthService;

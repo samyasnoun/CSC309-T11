@@ -7,6 +7,9 @@ const router = express.Router();
 // Create transaction (any authenticated user)
 router.post('/', jwtAuth, requireAny, TransactionController.createTransaction);
 
+// Get all transactions (Manager only)
+router.get('/', jwtAuth, requireManager, TransactionController.getTransactions);
+
 // Get transaction by ID (any authenticated user, with permission checks)
 router.get('/:transactionId', jwtAuth, requireAny, TransactionController.getTransaction);
 
@@ -14,10 +17,10 @@ router.get('/:transactionId', jwtAuth, requireAny, TransactionController.getTran
 router.get('/users/:userId', jwtAuth, requireAny, TransactionController.getUserTransactions);
 
 // Flag transaction as suspicious (Manager only)
-router.post('/:transactionId/suspicious', jwtAuth, requireManager, TransactionController.flagAsSuspicious);
+router.patch('/:transactionId/suspicious', jwtAuth, requireManager, TransactionController.flagAsSuspicious);
 
 // Process transaction (Cashier only)
-router.post('/:transactionId/processed', jwtAuth, requireCashier, TransactionController.processTransaction);
+router.patch('/:transactionId/processed', jwtAuth, requireCashier, TransactionController.processTransaction);
 
 module.exports = router;
 

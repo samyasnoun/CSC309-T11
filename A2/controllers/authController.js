@@ -404,6 +404,36 @@ class AuthController {
       next(error);
     }
   }
+  
+  // Get single user (for cashiers/managers)
+  static async getUser(req, res, next) {
+    try {
+      const { userId } = req.params;
+      const requestingUser = {
+        id: req.auth.userId,
+        role: req.auth.role
+      };
+      
+      // Validate user ID
+      if (!userId || isNaN(parseInt(userId))) {
+        return res.status(400).json({ error: 'Valid user ID is required' });
+      }
+      
+      // Get user with role-aware field projection
+      const user = await AuthService.getUser(parseInt(userId), requestingUser);
+      
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      res.json(user);
+    } catch (error) {
+      if (error.message === 'User not found') {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      next(error);
+    }
+  }
 }
 
 module.exports = AuthController;

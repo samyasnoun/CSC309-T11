@@ -219,6 +219,115 @@ class TransactionController {
       next(error);
     }
   }
+  
+  // Get all transactions (Manager only)
+  static async getTransactions(req, res, next) {
+    try {
+      const {
+        name = '',
+        createdBy = '',
+        suspicious = '',
+        promotionId = '',
+        type = '',
+        relatedId = '',
+        amount = '',
+        operator = '',
+        page = 1,
+        limit = 10
+      } = req.query;
+      
+      // Get filtered transactions
+      const result = await AuthService.getTransactions({
+        name,
+        createdBy,
+        suspicious,
+        promotionId,
+        type,
+        relatedId,
+        amount,
+        operator,
+        page: parseInt(page),
+        limit: parseInt(limit)
+      });
+      
+      res.json({
+        count: result.count,
+        results: result.results
+      });
+    } catch (error) {
+      if (error.message.includes('must be') || 
+          error.message.includes('Invalid') ||
+          error.message.includes('required')) {
+        return res.status(400).json({ error: error.message });
+      }
+      next(error);
+    }
+  }
+  
+  // Flag transaction as suspicious
+  static async flagAsSuspicious(req, res, next) {
+    try {
+      const { transactionId } = req.params;
+      const { suspicious } = req.body;
+      
+      // Validate transaction ID
+      if (!transactionId || isNaN(parseInt(transactionId))) {
+        return res.status(400).json({ error: 'Valid transaction ID is required' });
+      }
+      
+      // Validate suspicious flag
+      if (typeof suspicious !== 'boolean') {
+        return res.status(400).json({ error: 'Suspicious flag must be a boolean' });
+      }
+      
+      // Flag transaction
+      const transaction = await AuthService.flagTransactionAsSuspicious(
+        parseInt(transactionId), 
+        suspicious
+      );
+      
+      res.json(transaction);
+    } catch (error) {
+      if (error.message === 'Transaction not found') {
+        return res.status(404).json({ error: 'Transaction not found' });
+      }
+      next(error);
+    }
+  }
+  
+  // Process transaction
+  static async processTransaction(req, res, next) {
+    try {
+      const { transactionId } = req.params;
+      const { processed } = req.body;
+      
+      // Validate transaction ID
+      if (!transactionId || isNaN(parseInt(transactionId))) {
+        return res.status(400).json({ error: 'Valid transaction ID is required' });
+      }
+      
+      // Validate processed flag
+      if (processed !== true) {
+        return res.status(400).json({ error: 'Processed must be true' });
+      }
+      
+      // Process transaction
+      const transaction = await AuthService.processTransaction(
+        parseInt(transactionId)
+      );
+      
+      res.json(transaction);
+    } catch (error) {
+      if (error.message === 'Transaction not found') {
+        return res.status(404).json({ error: 'Transaction not found' });
+      }
+      if (error.message.includes('not of type') || 
+          error.message.includes('already been processed')) {
+        return res.status(400).json({ error: error.message });
+      }
+      next(error);
+    }
+  }
 }
 
 module.exports = TransactionController;

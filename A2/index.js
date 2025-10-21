@@ -35,8 +35,10 @@ app.use(attachUserInfo);
 
 // Routes
 app.use('/auth', require('./routes/auth'));
+app.use('/users', require('./routes/users'));
 app.use('/transactions', require('./routes/transactions'));
 app.use('/events', require('./routes/events'));
+app.use('/promotions', require('./routes/promotions'));
 app.use('/test', require('./routes/test'));
 
 // Health check endpoint

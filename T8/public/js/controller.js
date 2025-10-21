@@ -28,28 +28,35 @@ async function loadParagraphs() {
     }
     
     isLoading = true;
+    console.log(`Loading paragraphs starting from ${currentParagraph}`);
     
     try {
         const response = await fetch(`/text?paragraph=${currentParagraph}`);
         const result = await response.json();
         
         if (response.ok) {
-            // Only render if we have data and there's more content expected
+            // Only render if we have data
             if (result.data && result.data.length > 0) {
+                console.log(`Loaded ${result.data.length} paragraphs, hasMore: ${result.next}`);
                 renderParagraphs(result.data);
                 
                 // Update state
                 currentParagraph += result.data.length;
                 hasMoreContent = result.next;
                 
-                // If no more content, show end message
+                // If no more content, show end message and stop all loading
                 if (!hasMoreContent) {
+                    console.log('No more content, showing end message');
                     showEndMessage();
+                    // Remove scroll listener to prevent any further loads
+                    window.removeEventListener('scroll', handleScroll);
                 }
             } else {
                 // No data returned, mark as no more content
+                console.log('No data returned, marking as no more content');
                 hasMoreContent = false;
                 showEndMessage();
+                window.removeEventListener('scroll', handleScroll);
             }
         } else {
             console.error('Failed to load paragraphs:', result.message);
@@ -116,10 +123,10 @@ async function handleLikeClick(paragraphId, buttonElement) {
 // Function to handle scroll events for infinite scrolling
 function handleScroll() {
     // Check if user has scrolled to the bottom of the page
-    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 10) {
+    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 5) {
         // Load more content if available and enough time has passed since last load
         const now = Date.now();
-        if (hasMoreContent && !isLoading && (now - lastLoadTime) > 500) {
+        if (hasMoreContent && !isLoading && (now - lastLoadTime) > 200) {
             lastLoadTime = now;
             loadParagraphs();
         }

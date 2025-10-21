@@ -25,6 +25,15 @@ class AuthController {
         }
       });
     } catch (error) {
+      if (error.message === 'Invalid credentials') {
+        return res.status(401).json({ error: 'Invalid credentials' });
+      }
+      if (error.message === 'Account is deactivated') {
+        return res.status(403).json({ error: 'Account is deactivated' });
+      }
+      if (error.message === 'Account is not verified') {
+        return res.status(403).json({ error: 'Account is not verified' });
+      }
       next(error);
     }
   }

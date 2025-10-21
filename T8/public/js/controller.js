@@ -33,15 +33,21 @@ async function loadParagraphs() {
         const result = await response.json();
         
         if (response.ok) {
-            // Render the paragraphs
-            renderParagraphs(result.data);
-            
-            // Update state
-            currentParagraph += result.data.length;
-            hasMoreContent = result.next;
-            
-            // If no more content, show end message
-            if (!hasMoreContent) {
+            // Only render if we have data and there's more content expected
+            if (result.data && result.data.length > 0) {
+                renderParagraphs(result.data);
+                
+                // Update state
+                currentParagraph += result.data.length;
+                hasMoreContent = result.next;
+                
+                // If no more content, show end message
+                if (!hasMoreContent) {
+                    showEndMessage();
+                }
+            } else {
+                // No data returned, mark as no more content
+                hasMoreContent = false;
                 showEndMessage();
             }
         } else {
@@ -109,7 +115,7 @@ async function handleLikeClick(paragraphId, buttonElement) {
 // Function to handle scroll events for infinite scrolling
 function handleScroll() {
     // Check if user has scrolled to the bottom of the page
-    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
+    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 10) {
         // Load more content if available
         if (hasMoreContent && !isLoading) {
             loadParagraphs();

@@ -31,9 +31,8 @@ async function loadParagraphs() {
         return;
     }
     
-    // Check if loading the next batch would exceed our limit
-    // Server returns 5 paragraphs per request, so check if currentParagraph + 5 > 46
-    if (currentParagraph + 5 > MAX_PARAGRAPHS) {
+    // Check if we already have 46 paragraphs loaded
+    if (loadedParagraphIds.size >= MAX_PARAGRAPHS) {
         hasMoreContent = false;
         showEndMessage();
         window.removeEventListener('scroll', handleScroll);
@@ -56,8 +55,8 @@ async function loadParagraphs() {
                 // Update state - increment by the number of paragraphs actually loaded
                 currentParagraph += result.data.length;
                 
-                // Stop loading if server says no more content
-                if (!result.next) {
+                // Check if we have all paragraphs 1-46 or server says no more content
+                if (loadedParagraphIds.size >= MAX_PARAGRAPHS || !result.next) {
                     hasMoreContent = false;
                     showEndMessage();
                     window.removeEventListener('scroll', handleScroll);

@@ -24,8 +24,8 @@ enum TransactionType {
 
 model User {
   id                Int       @id @default(autoincrement())
-  utorid            String    @unique @db.VarChar(8)
-  name              String    @db.VarChar(50)
+  utorid            String    @unique
+  name              String
   email             String    @unique
   birthday          DateTime?
   role              RoleType  @default(regular)

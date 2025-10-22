@@ -1,203 +1,113 @@
 /*
  * controller.js
  *
- * CSC309 Tutorial 8
- * 
- * Complete me
+ * CSC309 Tutorial 8 — Infinite Scrolling
+ * Plain JavaScript only.
  */
 
-// Global variables to track state
-let currentParagraph = 1;
-let hasMoreContent = true;
+// ---- State ----
+let nextStartParagraph = 1;   // server expects the starting paragraph number
 let isLoading = false;
-let lastLoadTime = 0;
-let paragraphLikes = {}; // Track like state for each paragraph
-let paragraphClickCount = {}; // Track number of clicks for each paragraph
-let loadedParagraphIds = new Set(); // Track which paragraph IDs we've already loaded
-const MAX_PARAGRAPHS = 46;
+let reachedEnd = false;
 
-// Initialize the page when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    // Load the first page of paragraphs
-    loadParagraphs();
-    
-    // Add scroll event listener for infinite scrolling
-    window.addEventListener('scroll', handleScroll);
+// ---- Init ----
+document.addEventListener('DOMContentLoaded', () => {
+  loadNextPage();                    // load paragraphs 1–5 on page load
+  window.addEventListener('scroll', onScroll);
 });
 
-// Function to load paragraphs from the server
-async function loadParagraphs() {
-    if (isLoading || !hasMoreContent) {
-        return;
-    }
-    
-    // Check if we already have 46 paragraphs loaded
-    if (loadedParagraphIds.size >= MAX_PARAGRAPHS) {
-        hasMoreContent = false;
-        showEndMessage();
-        window.removeEventListener('scroll', handleScroll);
-        return;
-    }
-    
-    // Load 5 paragraphs per request as per handout
-    
-    isLoading = true;
-    
-    try {
-        const response = await fetch(`/text?paragraph=${currentParagraph}`);
-        const result = await response.json();
-        
-        if (response.ok) {
-            // Only render if we have data
-            if (result.data && result.data.length > 0) {
-                renderParagraphs(result.data);
-                
-                // Update state - increment by the number of paragraphs actually loaded
-                currentParagraph += result.data.length;
-                
-                // Stop loading if server says no more content
-                if (!result.next) {
-                    hasMoreContent = false;
-                    showEndMessage();
-                    window.removeEventListener('scroll', handleScroll);
-                }
-            } else {
-                // No data returned, mark as no more content
-                hasMoreContent = false;
-                showEndMessage();
-                window.removeEventListener('scroll', handleScroll);
-            }
-        }
-    } catch (error) {
-        // Handle error silently
-    } finally {
-        isLoading = false;
-    }
+// ---- Helpers ----
+function onScroll() {
+  if (reachedEnd || isLoading) return;
+
+  const scrolled = window.scrollY + window.innerHeight;
+  const docHeight = document.documentElement.scrollHeight;
+
+  // close enough to the bottom → fetch more
+  if (scrolled >= docHeight - 100) {
+    loadNextPage();
+  }
 }
 
-// Function to render a single paragraph in the DOM
-function renderSingleParagraph(paragraph) {
-    // Only render if we haven't already loaded this paragraph ID
-    if (loadedParagraphIds.has(paragraph.id)) {
-        return;
+async function loadNextPage() {
+  if (isLoading || reachedEnd) return;
+  isLoading = true;
+
+  try {
+    const res = await fetch(`/text?paragraph=${nextStartParagraph}`);
+    const payload = await res.json();
+
+    // Render any paragraphs we received
+    if (Array.isArray(payload.data) && payload.data.length > 0) {
+      renderParagraphs(payload.data);
+      // Next page should start after the last item we just rendered
+      nextStartParagraph += payload.data.length;
     }
-    
-    const dataContainer = document.getElementById('data');
-    
-    // Create the paragraph container div
-    const paragraphDiv = document.createElement('div');
-    paragraphDiv.id = `paragraph_${paragraph.id}`;
-    
-    // Create the paragraph content
-    const paragraphContent = document.createElement('p');
-    paragraphContent.innerHTML = `${paragraph.content} <b>(Paragraph: ${paragraph.id})</b>`;
-    
-    // Create the like button
-    const likeButton = document.createElement('button');
-    likeButton.className = 'btn like';
-    likeButton.textContent = `Likes: ${paragraph.likes}`;
-    likeButton.addEventListener('click', () => handleLikeClick(paragraph.id, likeButton));
-    
-    // Initialize like state and click count for this paragraph
-    paragraphLikes[paragraph.id] = false;
-    paragraphClickCount[paragraph.id] = 0;
-    
-    // Append elements to paragraph div
-    paragraphDiv.appendChild(paragraphContent);
-    paragraphDiv.appendChild(likeButton);
-    
-    // Append paragraph div to data container
-    dataContainer.appendChild(paragraphDiv);
-    
-    // Track that we've loaded this paragraph ID
-    loadedParagraphIds.add(paragraph.id);
+
+    // If the server says there is no next page, show end message and stop listening
+    if (!payload.next || !Array.isArray(payload.data) || payload.data.length === 0) {
+      reachedEnd = true;
+      showEndMessage();
+      window.removeEventListener('scroll', onScroll);
+    }
+  } catch (e) {
+    // fail silently per spec (no requirement to show errors)
+  } finally {
+    isLoading = false;
+  }
 }
 
-// Function to render paragraphs in the DOM
 function renderParagraphs(paragraphs) {
-    const dataContainer = document.getElementById('data');
-    
-    paragraphs.forEach(paragraph => {
-        // Only render if we haven't already loaded this paragraph ID and it's within our max limit
-        if (!loadedParagraphIds.has(paragraph.id) && paragraph.id <= MAX_PARAGRAPHS) {
-            renderSingleParagraph(paragraph);
-            loadedParagraphIds.add(paragraph.id);
-        }
+  const container = document.getElementById('data');
+
+  paragraphs.forEach(({ id, likes, content }) => {
+    // <div id="paragraph_<id>">
+    const wrapper = document.createElement('div');
+    wrapper.id = `paragraph_${id}`;
+
+    // <p>... <b>(Paragraph: id)</b></p>
+    const p = document.createElement('p');
+    // Content as text
+    p.appendChild(document.createTextNode(content + ' '));
+    const b = document.createElement('b');
+    b.textContent = `(Paragraph: ${id})`;
+    p.appendChild(b);
+
+    // <button class="btn like">Likes: X</button>
+    const btn = document.createElement('button');
+    btn.className = 'btn like';
+    btn.textContent = `Likes: ${likes}`;
+    btn.addEventListener('click', () => likeParagraph(id, btn));
+
+    wrapper.appendChild(p);
+    wrapper.appendChild(btn);
+    container.appendChild(wrapper);
+  });
+}
+
+async function likeParagraph(paragraphId, buttonEl) {
+  try {
+    const res = await fetch('/text/like', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ paragraph: paragraphId })
     });
-}
 
-// Function to handle like button clicks
-async function handleLikeClick(paragraphId, buttonElement) {
-    try {
-        // Increment click count
-        paragraphClickCount[paragraphId]++;
-        
-        // Get current like count from button text
-        const currentText = buttonElement.textContent;
-        const currentLikes = parseInt(currentText.split(': ')[1]);
-        
-        // Calculate new like count based on click count
-        let newLikeCount;
-        if (paragraphClickCount[paragraphId] % 2 === 1) {
-            // Odd click: add 1
-            newLikeCount = currentLikes + 1;
-            paragraphLikes[paragraphId] = true;
-        } else {
-            // Even click: subtract 1
-            newLikeCount = currentLikes - 1;
-            paragraphLikes[paragraphId] = false;
-        }
-        
-        // Update the button text
-        buttonElement.textContent = `Likes: ${newLikeCount}`;
-        
-        // Update button appearance based on like state
-        if (paragraphLikes[paragraphId]) {
-            buttonElement.style.backgroundColor = '#4CAF50'; // Green when liked
-            buttonElement.style.color = 'white';
-        } else {
-            buttonElement.style.backgroundColor = ''; // Default when not liked
-            buttonElement.style.color = '';
-        }
-        
-        // Send request to server for tracking
-        fetch('/text/like', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ paragraph: paragraphId })
-        }).catch(() => {
-            // Ignore server errors since we handle UI locally
-        });
-        
-    } catch (error) {
-        // Handle error silently
+    const payload = await res.json();
+    // Update strictly from server response
+    if (payload && payload.data && typeof payload.data.likes === 'number') {
+      buttonEl.textContent = `Likes: ${payload.data.likes}`;
     }
+  } catch (e) {
+    // ignore errors as per spec
+  }
 }
 
-// Function to handle scroll events for infinite scrolling
-function handleScroll() {
-    // Check if user has scrolled to the bottom of the page
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    const windowHeight = window.innerHeight;
-    const documentHeight = document.documentElement.scrollHeight;
-    
-    // Trigger when user is within 100px of the bottom
-    if (scrollTop + windowHeight >= documentHeight - 100) {
-        // Load more content if available and enough time has passed since last load
-        const now = Date.now();
-        if (hasMoreContent && !isLoading && (now - lastLoadTime) > 200) {
-            lastLoadTime = now;
-            loadParagraphs();
-        }
-    }
-}
-
-// Function to show end message when no more content is available
 function showEndMessage() {
-    const dataContainer = document.getElementById('data');
-    const endDiv = document.createElement('div');
-    endDiv.innerHTML = '<b>You have reached the end</b>';
-    dataContainer.appendChild(endDiv);
+  const container = document.getElementById('data');
+  const p = document.createElement('p');
+  const b = document.createElement('b');
+  b.textContent = 'You have reached the end';
+  p.appendChild(b);
+  container.appendChild(p);
 }

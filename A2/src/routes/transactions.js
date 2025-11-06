@@ -8,12 +8,14 @@ import {
     patchRedemptionTransactionStatusById,
 } from "../controllers/transactionController.js";
 
+import { authenticate, requires } from "../middleware/authMiddleware.js";
+
 const router = express.Router();
 
-router.post("/", postTransaction);
-router.get("/", getTransactions);
-router.get("/:transactionId", getTransactionById);
-router.patch("/:transactionId/suspicious", patchTransactionAsSuspiciousById);
-router.patch("/:transactionId/processed", patchRedemptionTransactionStatusById);
+router.post("/", authenticate, requires("cashier"), postTransaction);
+router.get("/", authenticate, requires("cashier"), getTransactions);
+router.get("/:transactionId", authenticate, requires("cashier"), getTransactionById);
+router.patch("/:transactionId/suspicious", authenticate, requires("cashier"), patchTransactionAsSuspiciousById);
+router.patch("/:transactionId/processed", authenticate, requires("cashier"), patchRedemptionTransactionStatusById);
 
 export default router;

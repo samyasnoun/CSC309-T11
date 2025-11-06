@@ -18,19 +18,32 @@ const port = (() => {
     return num;
 })();
 
-const express = require("express");
+import express from "express";
 const app = express();
 
 app.use(express.json());
 
-// ADD YOUR WORK HERE
-
 // Import routers
-const authRouter = require("./src/routes/auth.js").default;
+import authRouter from "./src/routes/auth.js";
+import usersRouter from "./src/routes/users.js";
+import transactionsRouter from "./src/routes/transactions.js";
+import eventsRouter from "./src/routes/events.js";
+import promotionsRouter from "./src/routes/promotions.js";
+
+// Import middleware
+import { authenticate, requires } from "./src/middleware/authMiddleware.js";
+import { notFound, errorHandler } from "./src/middleware/errorHandler.js";
 
 // Mount routers
 app.use("/auth", authRouter);
+app.use("/users", usersRouter);
+app.use("/transactions", transactionsRouter);
+app.use("/events", eventsRouter);
+app.use("/promotions", promotionsRouter);
 
+// Error handling middleware (must be last)
+app.use(notFound);
+app.use(errorHandler);
 
 const server = app.listen(port, () => {
     console.log(`Server running on port ${port}`);

@@ -1,15 +1,15 @@
 /* Authentication Middleware Logic, to be called in every route endpoint */
 
-const {expressjwt: jwt} = require('express-jwt');
-const prisma = require('../prismaClient');
+import { expressjwt as jwt } from 'express-jwt';
+import prisma from '../prismaClient.js';
 
 
-const authenticate = jwt({
-    secret: process.env.JWT_SECRET,
+export const authenticate = jwt({
+    secret: process.env.JWT_SECRET || "secretkey",
     algorithms: ['HS256']
 })
 
-function requires(minRole) {
+export function requires(minRole) {
     const ranking = { regular: 1, cashier: 2, manager: 3, superuser: 4};
 
     return async (req, res, next) => {
@@ -34,5 +34,3 @@ function requires(minRole) {
         }
     };
 }
-
-module.exports = { authenticate, requires};

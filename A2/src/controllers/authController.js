@@ -1,7 +1,7 @@
-const { v4: uuidv4 } = require("uuid");
-const prisma = require("../prismaClient");
-const { generateToken } = require("../services/jwt");
-const { hashPassword, comparePassword } = require("../services/bcrypt");
+import { v4 as uuidv4 } from "uuid";
+import prisma from "../prismaClient.js";
+import { generateToken } from "../services/jwt.js";
+import { hashPassword, comparePassword } from "../services/bcrypt.js";
 
 
 const rateLimiter = new Map();
@@ -115,7 +115,7 @@ export const resetPassword = async (req, res) => {
     }
 
     if (user.resetExpiresAt && new Date() > user.resetExpiresAt) {
-        throw new Error("Not Found");
+        return res.status(410).json({ error: "Gone" });
     }
 
     const hashedPassword = await hashPassword(password);

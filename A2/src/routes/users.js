@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const { authenticate, requires } = require("../middleware/authMiddleware");
+const { authenticate, requires, attachUser } = require("../middleware/authMiddleware");
 
 const {
   postUser,
@@ -24,19 +24,19 @@ router.post("/", authenticate, requires("cashier"), postUser);
 router.get("/", authenticate, requires("manager"), getUsers);
 
 // GET /users/me - Get current authenticated user (regular or higher)
-router.get("/me", authenticate, getCurrentUser);
+router.get("/me", authenticate, requires("regular"), getCurrentUser);
 
 // PATCH /users/me - Update current user's info (regular or higher)
-router.patch("/me", authenticate, patchCurrentUser);
+router.patch("/me", authenticate, requires("regular"), patchCurrentUser);
 
 // PATCH /users/me/password - Update current user's password (regular or higher)
-router.patch("/me/password", authenticate, patchCurrentUserPassword);
+router.patch("/me/password", authenticate, requires("regular"), patchCurrentUserPassword);
 
 // POST /users/me/transactions - Create a redemption transaction (regular or higher)
-router.post("/me/transactions", authenticate, postRedemptionTransaction);
+router.post("/me/transactions", authenticate, requires("regular"), postRedemptionTransaction);
 
 // GET /users/me/transactions - Get current user's transactions (regular or higher)
-router.get("/me/transactions", authenticate, getCurrentUserTransactions);
+router.get("/me/transactions", authenticate, requires("regular"), getCurrentUserTransactions);
 
 // GET /users/:userId - Retrieve a specific user
 // (cashier or higher; managers/superusers will see extended fields in the controller)
@@ -49,6 +49,6 @@ router.patch("/:userId", authenticate, requires("manager"), patchUserById);
 router.get("/:userId/transactions", authenticate, requires("cashier"), getUserTransactions);
 
 // POST /users/:userId/transactions - Create a transfer (regular or higher; sender = current user)
-router.post("/:userId/transactions", authenticate, postTransferTransaction);
+router.post("/:userId/transactions", authenticate, requires("regular"), postTransferTransaction);
 
 module.exports = router;

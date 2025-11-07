@@ -394,7 +394,7 @@ const patchEventById = async (req, res, next) => {
                     ? Number(points)
                     : points;
 
-            if (!Number.isInteger(parsedPoints) || parsedPoints < 0) {
+            if (!Number.isInteger(parsedPoints) || parsedPoints <= 0) {
                 throw new Error("Bad Request");
             }
 
@@ -457,7 +457,7 @@ const deleteEventById = async (req, res, next) => {
 
         await prisma.event.delete({ where: { id } });
 
-        return res.status(204).send();
+        return res.status(200).json({ id });
     } catch (err) {
         next(err);
     }
@@ -696,22 +696,13 @@ const postCurrentUserToEvent = async (req, res, next) => {
 
         if (!event) throw new Error("Not Found");
 
-        const now = new Date();
-        
-        // Check published status FIRST
-        if (!event.published) return res.status(403).json({ error: "Forbidden" });
-        
-        // Then check time validity
-        if (event.endTime <= now) {
+        if (event.endTime <= new Date()) {
             const error = new Error("Gone");
             error.statusCode = 410;
             throw error;
         }
-        
-        // Can't RSVP to events that have started
-        if (event.startTime <= now) {
-            throw new Error("Bad Request");
-        }
+
+        if (!event.published) return res.status(403).json({ error: "Forbidden" });
 
         if (event.organizers.some((o) => o.id === viewer.id)) {
             throw new Error("Bad Request");
@@ -766,21 +757,12 @@ const removeCurrentUserFromEvent = async (req, res, next) => {
 
         if (!event) throw new Error("Not Found");
 
-        const now = new Date();
-        
-        // Check time validity first - if event has ended, return 410
-        if (event.endTime <= now) {
+        if (event.endTime <= new Date()) {
             const error = new Error("Gone");
             error.statusCode = 410;
             throw error;
         }
-        
-        // Can't unregister from events that have started
-        if (event.startTime <= now) {
-            throw new Error("Bad Request");
-        }
 
-        // Check if user is actually a guest
         if (!event.guests.some((g) => g.id === viewer.id)) {
             throw new Error("Not Found");
         }
@@ -849,11 +831,6 @@ const createRewardTransaction = async (req, res, next) => {
         });
 
         if (!event) throw new Error("Not Found");
-
-        // Can only award points after event has ended
-        if (event.endTime > new Date()) {
-            throw new Error("Bad Request");
-        }
 
         const requester = req.me || (await loadViewer(req));
 

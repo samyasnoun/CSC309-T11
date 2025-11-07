@@ -93,7 +93,7 @@ const postEvent = async (req, res, next) => {
             capacityValue = capacity;
         }
 
-        if (!Number.isInteger(points) || points <= 0) {
+        if (!Number.isInteger(points) || points < 0) {
             throw new Error("Bad Request");
         }
 
@@ -160,25 +160,14 @@ const getEvents = async (req, res, next) => {
         } else {
             const clauses = [];
 
-            if (publishedFilter !== false) {
-                const publishedConditions = [...otherFilters];
-                if (publishedFilter === true) {
-                    publishedConditions.push({ published: true });
-                }
-                clauses.push({ AND: [...publishedConditions, { published: true }] });
-            }
+            // Regular users always see published events
+            const publishedConditions = [...otherFilters, { published: true }];
+            clauses.push({ AND: publishedConditions });
 
-            if (viewer && publishedFilter !== true) {
-                const membershipFilters = [...otherFilters];
-                if (publishedFilter !== null) {
-                    membershipFilters.push({ published: publishedFilter });
-                }
-                clauses.push({
-                    AND: [...membershipFilters, { organizers: { some: { id: viewer.id } } }],
-                });
-                clauses.push({
-                    AND: [...membershipFilters, { guests: { some: { id: viewer.id } } }],
-                });
+            // If user is logged in, also show unpublished events where they're organizers
+            if (viewer) {
+                const organizerConditions = [...otherFilters, { organizers: { some: { id: viewer.id } } }];
+                clauses.push({ AND: organizerConditions });
             }
 
             if (clauses.length === 0) {
@@ -284,6 +273,16 @@ const patchEventById = async (req, res, next) => {
         if (!existing) throw new Error("Not Found");
 
         const now = new Date();
+        
+        // Check permissions for points updates - only managers/superusers can update points
+        const me = req.me;
+        if (points !== undefined && me) {
+            const isManagerOrHigher = me.role === "manager" || me.role === "superuser";
+            if (!isManagerOrHigher) {
+                throw new Error("Forbidden");
+            }
+        }
+        
         if (existing.endTime <= now) {
             if (name !== undefined || description !== undefined || location !== undefined) {
                 throw new Error("Bad Request");
@@ -342,7 +341,10 @@ const patchEventById = async (req, res, next) => {
         }
 
         if (points !== undefined) {
-            if (!Number.isInteger(points) || points < existing.pointsAwarded) {
+            if (!Number.isInteger(points) || points < 0) {
+                throw new Error("Bad Request");
+            }
+            if (points < existing.pointsAwarded) {
                 throw new Error("Bad Request");
             }
             data.points = points;
@@ -390,7 +392,7 @@ const deleteEventById = async (req, res, next) => {
 
         await prisma.event.delete({ where: { id } });
 
-        return res.status(200).json({ id });
+        return res.status(204).send();
     } catch (err) {
         next(err);
     }
@@ -557,7 +559,12 @@ const postGuestToEvent = async (req, res, next) => {
             .status(alreadyGuest ? 200 : 201)
             .json({
                 ...serializeEvent(updatedEvent),
-                guestAdded: { added: !alreadyGuest },
+                guestAdded: {
+                    id: target.id,
+                    utorid: target.utorid,
+                    name: target.name,
+                    added: !alreadyGuest
+                },
             });
     } catch (err) {
         if (err.statusCode === 410) {
@@ -625,14 +632,25 @@ const postCurrentUserToEvent = async (req, res, next) => {
 
         if (!event) throw new Error("Not Found");
 
-        if (!event.published) return res.status(403).json({ error: "Forbidden" });
-
-        if (event.endTime <= new Date()) {
+        // Check time validity first (before published check)
+        const now = new Date();
+        
+        // Can't RSVP to events that have ended
+        if (event.endTime <= now) {
             const error = new Error("Gone");
             error.statusCode = 410;
             throw error;
         }
+        
+        // Can't RSVP to events that have started (ongoing events)
+        if (event.startTime <= now) {
+            throw new Error("Bad Request");
+        }
 
+        // Check if published
+        if (!event.published) return res.status(403).json({ error: "Forbidden" });
+
+        // Check if user is organizer
         if (event.organizers.some((o) => o.id === viewer.id)) {
             throw new Error("Bad Request");
         }
@@ -679,12 +697,21 @@ const removeCurrentUserFromEvent = async (req, res, next) => {
 
         if (!event) throw new Error("Not Found");
 
-        if (event.endTime <= new Date()) {
+        const now = new Date();
+        
+        // Check time validity first - if event has ended, return 410
+        if (event.endTime <= now) {
             const error = new Error("Gone");
             error.statusCode = 410;
             throw error;
         }
+        
+        // Can't unregister from events that have started
+        if (event.startTime <= now) {
+            throw new Error("Bad Request");
+        }
 
+        // Check if user is actually a guest
         if (!event.guests.some((g) => g.id === viewer.id)) {
             throw new Error("Not Found");
         }

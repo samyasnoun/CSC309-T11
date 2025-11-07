@@ -1,0 +1,17 @@
+AI Usage Declaration for CSC309 A2
+=====================================
+
+This assignment utilized AI assistance (Claude/Cursor) for:
+
+1. Debugging and fixing failing test cases
+2. Understanding spec requirements and translating them to code
+3. Implementing optionalAuth middleware for public endpoint access
+4. Refactoring event and promotion visibility logic
+5. Fixing status code mappings (400/403/404/410)
+6. Correcting response schemas (e.g., guestAdded field structure)
+7. Creating Postman test collection
+8. Writing documentation and code comments
+
+All code was reviewed, tested, and understood by the student.
+AI was used as a development tool and learning assistant.
+

@@ -1,0 +1,313 @@
+{
+	"info": {
+		"_postman_id": "csc309-a2-tests",
+		"name": "CSC309 A2 - Basic Tests",
+		"description": "Basic test collection for A2 API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Login as Manager",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"if (pm.response.code === 200) {",
+									"    const body = pm.response.json();",
+									"    pm.environment.set(\"token_manager\", body.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"utorid\": \"johndoe1\",\n    \"password\": \"password123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["auth", "login"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Events",
+			"item": [
+				{
+					"name": "Get All Events (Public)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has count and results\", () => {",
+									"    const body = pm.response.json();",
+									"    pm.expect(body).to.have.property('count');",
+									"    pm.expect(body).to.have.property('results');",
+									"    pm.expect(body.results).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/events",
+							"host": ["{{baseUrl}}"],
+							"path": ["events"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Events (Manager)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Manager sees more events\", () => {",
+									"    const body = pm.response.json();",
+									"    pm.expect(body.count).to.be.at.least(0);",
+									"    if (body.results.length > 0) {",
+									"        pm.environment.set(\"test_event_id\", body.results[0].id);",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_manager}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/events",
+							"host": ["{{baseUrl}}"],
+							"path": ["events"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Event",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", () => {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"if (pm.response.code === 201) {",
+									"    const body = pm.response.json();",
+									"    pm.environment.set(\"new_event_id\", body.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_manager}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Test Event\",\n    \"description\": \"A test event created by Postman\",\n    \"location\": \"BA1234\",\n    \"startTime\": \"2025-12-01T10:00:00Z\",\n    \"endTime\": \"2025-12-01T12:00:00Z\",\n    \"points\": 100,\n    \"capacity\": 50\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/events",
+							"host": ["{{baseUrl}}"],
+							"path": ["events"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Promotions",
+			"item": [
+				{
+					"name": "Get All Promotions (Public)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has count and results\", () => {",
+									"    const body = pm.response.json();",
+									"    pm.expect(body).to.have.property('count');",
+									"    pm.expect(body).to.have.property('results');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/promotions",
+							"host": ["{{baseUrl}}"],
+							"path": ["promotions"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Promotion",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", () => {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"if (pm.response.code === 201) {",
+									"    const body = pm.response.json();",
+									"    pm.environment.set(\"new_promo_id\", body.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_manager}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Test Promo\",\n    \"description\": \"A test promotion\",\n    \"type\": \"automatic\",\n    \"startTime\": \"2025-11-01T00:00:00Z\",\n    \"endTime\": \"2025-12-31T23:59:59Z\",\n    \"rate\": 0.1,\n    \"points\": 10,\n    \"minSpending\": 5.0\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/promotions",
+							"host": ["{{baseUrl}}"],
+							"path": ["promotions"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Get Current User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Has user info\", () => {",
+									"    const body = pm.response.json();",
+									"    pm.expect(body).to.have.property('utorid');",
+									"    pm.expect(body).to.have.property('role');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_manager}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/users/me",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "me"]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8000",
+			"type": "string"
+		}
+	]
+}
+

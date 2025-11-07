@@ -1,0 +1,16 @@
+Collaboration Declaration for CSC309 A2
+==========================================
+
+This assignment was completed individually by the student.
+
+No collaboration with other students occurred.
+No code was copied from external sources beyond official course materials.
+
+Resources consulted:
+- Course lecture notes and tutorials
+- Official documentation (Express.js, Prisma, JWT)
+- MarkUs test output for debugging
+- AI assistant (Claude/Cursor) as documented in ai.txt
+
+All work submitted is my own original work.
+

@@ -159,12 +159,12 @@ const adjustmentTransaction = async (req, res, next) => {
     const normalizedUtorid = utorid.toLowerCase();
 
     const customer = await prisma.user.findUnique({ where: { utorid: normalizedUtorid } });
-    if (!customer) throw new Error("Bad Request");
+    if (!customer) throw new Error("Not Found");
 
     const relatedTransaction = await prisma.transaction.findUnique({
       where: { id: relId },
     });
-    if (!relatedTransaction) throw new Error("Bad Request");
+    if (!relatedTransaction) throw new Error("Not Found");
 
     const manager = req.me;
     const transaction = await prisma.transaction.create({
@@ -305,7 +305,7 @@ const getTransactionById = async (req, res, next) => {
 
     if (!t) throw new Error("Not Found");
 
-    return res.status(200).json({
+    const response = {
       id: t.id,
       utorid: t.user.utorid,
       type: t.type,
@@ -315,7 +315,14 @@ const getTransactionById = async (req, res, next) => {
       suspicious: t.suspicious,
       remark: t.remark,
       createdBy: t.createdBy?.utorid || null,
-    });
+    };
+    
+    // Include relatedId if it exists
+    if (t.relatedId !== null && t.relatedId !== undefined) {
+      response.relatedId = t.relatedId;
+    }
+    
+    return res.status(200).json(response);
   } catch (err) {
     next(err);
   }

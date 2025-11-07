@@ -40,14 +40,30 @@ function serializeEvent(event) {
 }
 
 async function loadViewer(req) {
-    if (!req.auth || typeof req.auth.userId !== "number") return null;
-    const viewer = await prisma.user.findUnique({ where: { id: req.auth.userId } });
+    const rawId =
+        (req.auth && Object.prototype.hasOwnProperty.call(req.auth, "userId")
+            ? req.auth.userId
+            : undefined) ?? req.me?.id;
+
+    const userId = Number(rawId);
+    if (!Number.isInteger(userId) || userId <= 0) {
+        return null;
+    }
+
+    const viewer = await prisma.user.findUnique({ where: { id: userId } });
     return viewer;
 }
 
 function ensureCapacity(event) {
-    if (event.capacity !== null && event._count.guests >= event.capacity) {
-        throw new Error("Bad Request");
+    if (event.capacity === null || event.capacity === undefined) {
+        return;
+    }
+
+    const guestCount = event._count?.guests ?? event.guests?.length ?? 0;
+    if (guestCount >= event.capacity) {
+        const error = new Error("Gone");
+        error.statusCode = 410;
+        throw error;
     }
 }
 
@@ -134,8 +150,8 @@ const getEvents = async (req, res, next) => {
         const role = viewer?.role ?? "regular";
 
         const { page = 1, limit = 10, published } = req.query ?? {};
-        const pageNum = parseInt(page) || 1;
-        const limitNum = parseInt(limit) || 10;
+        const pageNum = parseInt(page, 10) || 1;
+        const limitNum = parseInt(limit, 10) || 10;
 
         if (!Number.isInteger(pageNum) || pageNum < 1) throw new Error("Bad Request");
         if (!Number.isInteger(limitNum) || limitNum < 1 || limitNum > 100)
@@ -146,9 +162,17 @@ const getEvents = async (req, res, next) => {
         let publishedFilter = null;
 
         if (published !== undefined) {
-            if (published === "true") publishedFilter = true;
-            else if (published === "false") publishedFilter = false;
-            else throw new Error("Bad Request");
+            if (published === "true" || published === "1" || published === 1) {
+                publishedFilter = true;
+            } else if (
+                published === "false" ||
+                published === "0" ||
+                published === 0
+            ) {
+                publishedFilter = false;
+            } else {
+                throw new Error("Bad Request");
+            }
         }
 
         if (role === "manager" || role === "superuser") {
@@ -273,6 +297,12 @@ const patchEventById = async (req, res, next) => {
             throw new Error("Bad Request");
         }
 
+        const actorRole = req.me?.role ?? "regular";
+        const requiresManagerRole = points !== undefined || published !== undefined;
+        if (requiresManagerRole && !["manager", "superuser"].includes(actorRole)) {
+            throw new Error("Forbidden");
+        }
+
         const existing = await prisma.event.findUnique({
             where: { id },
             include: {
@@ -293,21 +323,25 @@ const patchEventById = async (req, res, next) => {
         const data = {};
 
         if (name !== undefined) {
-            if (typeof name !== "string" || !name.trim() || name.length > 100) {
+            if (typeof name !== "string" || !name.trim() || name.trim().length > 100) {
                 throw new Error("Bad Request");
             }
             data.name = name.trim();
         }
 
         if (description !== undefined) {
-            if (typeof description !== "string" || !description.trim() || description.length > 1000) {
+            if (
+                typeof description !== "string" ||
+                !description.trim() ||
+                description.trim().length > 1000
+            ) {
                 throw new Error("Bad Request");
             }
             data.description = description.trim();
         }
 
         if (location !== undefined) {
-            if (typeof location !== "string" || !location.trim() || location.length > 200) {
+            if (typeof location !== "string" || !location.trim() || location.trim().length > 200) {
                 throw new Error("Bad Request");
             }
             data.location = location.trim();
@@ -325,36 +359,69 @@ const patchEventById = async (req, res, next) => {
             data.endTime = end;
         }
 
-        if (data.startTime && data.endTime && data.endTime <= data.startTime) {
-            throw new Error("Bad Request");
+        if (startTime !== undefined || endTime !== undefined) {
+            const finalStart = data.startTime ?? existing.startTime;
+            const finalEnd = data.endTime ?? existing.endTime;
+            if (finalEnd <= finalStart) {
+                throw new Error("Bad Request");
+            }
         }
 
         if (capacity !== undefined) {
-            if (capacity === null) {
+            if (capacity === null || (typeof capacity === "string" && capacity.trim().toLowerCase() === "null")) {
                 data.capacity = null;
-            } else if (!Number.isInteger(capacity) || capacity <= 0) {
-                throw new Error("Bad Request");
-            } else if (existing.guests.length > capacity) {
-                throw new Error("Bad Request");
             } else {
-                data.capacity = capacity;
+                const parsedCapacity =
+                    typeof capacity === "string" && capacity.trim() !== ""
+                        ? Number(capacity)
+                        : capacity;
+
+                if (!Number.isInteger(parsedCapacity) || parsedCapacity <= 0) {
+                    throw new Error("Bad Request");
+                }
+
+                if (existing.guests.length > parsedCapacity) {
+                    throw new Error("Bad Request");
+                }
+
+                data.capacity = parsedCapacity;
             }
         }
 
         if (points !== undefined) {
-            if (!Number.isInteger(points) || points < existing.pointsAwarded) {
+            const parsedPoints =
+                typeof points === "string" && points.trim() !== ""
+                    ? Number(points)
+                    : points;
+
+            if (!Number.isInteger(parsedPoints) || parsedPoints <= 0) {
                 throw new Error("Bad Request");
             }
-            data.points = points;
-            data.pointsRemain = points - existing.pointsAwarded;
+
+            if (parsedPoints < existing.pointsAwarded) {
+                throw new Error("Bad Request");
+            }
+
+            data.points = parsedPoints;
+            data.pointsRemain = parsedPoints - existing.pointsAwarded;
         }
 
         if (published !== undefined) {
-            if (typeof published !== "boolean") throw new Error("Bad Request");
-            if (published && existing.organizers.length === 0) {
-                throw new Error("Bad Request");
+            let normalizedPublished = published;
+            if (typeof published === "string") {
+                const trimmed = published.trim();
+                if (trimmed.toLowerCase() === "true" || trimmed === "1") {
+                    normalizedPublished = true;
+                } else if (trimmed.toLowerCase() === "false" || trimmed === "0") {
+                    normalizedPublished = false;
+                }
+            } else if (typeof published === "number") {
+                if (published === 1) normalizedPublished = true;
+                if (published === 0) normalizedPublished = false;
             }
-            data.published = published;
+
+            if (typeof normalizedPublished !== "boolean") throw new Error("Bad Request");
+            data.published = normalizedPublished;
         }
 
         const updated = await prisma.event.update({
@@ -721,7 +788,19 @@ const createRewardTransaction = async (req, res, next) => {
 
         const { utorids = [], amount, remark = "" } = req.body ?? {};
 
-        if (!Array.isArray(utorids) || !Number.isInteger(amount) || amount <= 0) {
+        const utoridList = Array.isArray(utorids) ? utorids : [utorids];
+
+        const normalizedAmount =
+            typeof amount === "string" && amount.trim() !== ""
+                ? Number(amount)
+                : amount;
+
+        if (
+            !Array.isArray(utoridList) ||
+            utoridList.length === 0 ||
+            !Number.isInteger(normalizedAmount) ||
+            normalizedAmount <= 0
+        ) {
             throw new Error("Bad Request");
         }
 
@@ -746,7 +825,11 @@ const createRewardTransaction = async (req, res, next) => {
             throw new Error("Forbidden");
         }
 
-        const lowerUtorids = utorids.map((u) => String(u).toLowerCase());
+        const lowerUtorids = utoridList.map((u) => String(u ?? "").trim().toLowerCase());
+
+        if (lowerUtorids.some((utorid) => !utorid)) {
+            throw new Error("Bad Request");
+        }
 
         const guestsByUtorid = new Map(
             event.guests.map((guest) => [guest.utorid.toLowerCase(), guest])
@@ -762,7 +845,7 @@ const createRewardTransaction = async (req, res, next) => {
             return guest;
         });
 
-        if (event.pointsRemain < amount * guestsToReward.length) {
+        if (event.pointsRemain < normalizedAmount * guestsToReward.length) {
             throw new Error("Bad Request");
         }
 
@@ -773,7 +856,7 @@ const createRewardTransaction = async (req, res, next) => {
                     data: {
                         userId: guest.id,
                         type: "event",
-                        amount,
+                        amount: normalizedAmount,
                         remark: typeof remark === "string" ? remark : "",
                         eventId,
                     },
@@ -781,7 +864,7 @@ const createRewardTransaction = async (req, res, next) => {
 
                 await tx.user.update({
                     where: { id: guest.id },
-                    data: { points: { increment: amount } },
+                    data: { points: { increment: normalizedAmount } },
                 });
 
                 created.push(transaction);
@@ -790,8 +873,8 @@ const createRewardTransaction = async (req, res, next) => {
             await tx.event.update({
                 where: { id: eventId },
                 data: {
-                    pointsAwarded: { increment: amount * guestsToReward.length },
-                    pointsRemain: { decrement: amount * guestsToReward.length },
+                    pointsAwarded: { increment: normalizedAmount * guestsToReward.length },
+                    pointsRemain: { decrement: normalizedAmount * guestsToReward.length },
                 },
             });
 

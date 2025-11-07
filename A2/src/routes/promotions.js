@@ -12,8 +12,8 @@ const { authenticate, requires, attachUser } = require("../middleware/authMiddle
 const router = express.Router();
 
 router.post("/", authenticate, requires("manager"), postPromotion);
-router.get("/", authenticate, attachUser, getPromotions);
-router.get("/:promotionId", authenticate, attachUser, getPromotionById);
+router.get("/", authenticate, requires("regular"), getPromotions);
+router.get("/:promotionId", authenticate, requires("regular"), getPromotionById);
 router.patch("/:promotionId", authenticate, requires("manager"), patchPromotionById);
 router.delete("/:promotionId", authenticate, requires("manager"), deletePromotionById);
 

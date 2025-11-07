@@ -128,7 +128,7 @@ const postEvent = async (req, res, next) => {
 
 const getEvents = async (req, res, next) => {
     try {
-        const viewer = await loadViewer(req);
+        const viewer = req.me;
         const role = viewer?.role ?? "regular";
 
         const { page = 1, limit = 10, name, location, started, ended, showFull, published } = req.query ?? {};
@@ -147,11 +147,11 @@ const getEvents = async (req, res, next) => {
         const conditions = [];
 
         if (name) {
-            conditions.push({ name: { contains: String(name), mode: "insensitive" } });
+            conditions.push({ name: { contains: String(name) } });
         }
 
         if (location) {
-            conditions.push({ location: { contains: String(location), mode: "insensitive" } });
+            conditions.push({ location: { contains: String(location) } });
         }
 
         const now = new Date();
@@ -243,7 +243,7 @@ const getEventById = async (req, res, next) => {
             return res.status(404).json({ error: "Not Found" });
 
 
-        const viewer = await loadViewer(req);
+        const viewer = req.me;
         const role = viewer?.role ?? "regular";
 
         const event = await prisma.event.findUnique({
@@ -664,7 +664,7 @@ const deleteGuestFromEvent = async (req, res, next) => {
 
 const postCurrentUserToEvent = async (req, res, next) => {
     try {
-        const viewer = await loadViewer(req);
+        const viewer = req.me;
         if (!viewer) throw new Error("Unauthorized");
 
         const eventId = Number(req.params.eventId);
@@ -723,7 +723,7 @@ const postCurrentUserToEvent = async (req, res, next) => {
 
 const removeCurrentUserFromEvent = async (req, res, next) => {
     try {
-        const viewer = await loadViewer(req);
+        const viewer = req.me;
         if (!viewer) throw new Error("Unauthorized");
 
         const eventId = Number(req.params.eventId);
@@ -779,7 +779,7 @@ const createRewardTransaction = async (req, res, next) => {
 
         if (!event) throw new Error("Not Found");
 
-        const requester = req.me || (await loadViewer(req));
+        const requester = req.me;
 
         const isOrganizer = requester && event.organizers.some((o) => o.id === requester.id);
         if (!requester || (!isOrganizer && !["manager", "superuser"].includes(requester.role))) {

@@ -64,10 +64,7 @@ const requestPasswordReset = async (req, res, next) => {
     const utoridKey = String(utorid).toLowerCase();
     const user = await prisma.user.findUnique({ where: { utorid: utoridKey } });
     if (!user) {
-      return res.status(202).json({
-        expiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
-        resetToken: uuidv4(),
-      });
+      throw new Error("Not Found");
     }
 
     const resetToken = uuidv4();

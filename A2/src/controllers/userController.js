@@ -116,8 +116,8 @@ const getUsers = async (req, res, next) => {
     if (name) {
       const searchTerm = String(name);
       where.OR = [
-        { utorid: { contains: searchTerm, mode: "insensitive" } },
-        { name: { contains: searchTerm, mode: "insensitive" } },
+        { utorid: { contains: searchTerm } },
+        { name: { contains: searchTerm } },
       ];
     }
 
@@ -315,11 +315,6 @@ const patchUserById = async (req, res, next) => {
 
     const meRole = req.me?.role;
     if (!meRole) throw new Error("Unauthorized");
-
-    // Managers and superusers can patch users
-    if (meRole !== "manager" && meRole !== "superuser") {
-      throw new Error("Forbidden");
-    }
 
     // Validate role if provided
     if (role !== undefined) {
@@ -527,7 +522,14 @@ const postRedemptionTransaction = async (req, res, next) => {
     const me = await loadCurrentUser(req);
     const { type, amount, remark } = req.body ?? {};
 
-    if (type !== "redemption") throw new Error("Bad Request");
+    // Check for extra fields
+    const allowedFields = ['type', 'amount', 'remark'];
+    const requestFields = Object.keys(req.body || {});
+    const hasExtraFields = requestFields.some(field => !allowedFields.includes(field));
+    if (hasExtraFields) throw new Error("Bad Request");
+
+    if (!type || type !== "redemption") throw new Error("Bad Request");
+    if (amount === undefined) throw new Error("Bad Request");
     const amountValue = Number(amount);
     if (!Number.isInteger(amountValue) || amountValue <= 0) throw new Error("Bad Request");
 
@@ -702,7 +704,14 @@ const postTransferTransaction = async (req, res, next) => {
 
     const { type, amount, remark } = req.body ?? {};
 
-    if (type !== "transfer") throw new Error("Bad Request");
+    // Check for extra fields
+    const allowedFields = ['type', 'amount', 'remark'];
+    const requestFields = Object.keys(req.body || {});
+    const hasExtraFields = requestFields.some(field => !allowedFields.includes(field));
+    if (hasExtraFields) throw new Error("Bad Request");
+
+    if (!type || type !== "transfer") throw new Error("Bad Request");
+    if (amount === undefined) throw new Error("Bad Request");
     const amountValue = Number(amount);
     if (!Number.isInteger(amountValue) || amountValue <= 0) throw new Error("Bad Request");
 

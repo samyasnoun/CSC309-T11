@@ -126,7 +126,7 @@ const getPromotions = async (req, res, next) => {
     if (!Number.isInteger(limitNum) || limitNum < 1 || limitNum > 100)
       throw new Error("Bad Request");
 
-    const viewer = await loadViewer(req);
+    const viewer = req.me;
     const role = viewer?.role ?? "regular";
 
     const now = new Date();
@@ -205,7 +205,7 @@ const getPromotionById = async (req, res, next) => {
 
     const now = new Date();
 
-    const viewer = await loadViewer(req);
+    const viewer = req.me;
     const role = viewer?.role ?? "regular";
 
     if (role === "regular" || role === "cashier") {

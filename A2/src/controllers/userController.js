@@ -231,10 +231,6 @@ const getUserById = async (req, res, next) => {
     if (!Number.isInteger(id) || id <= 0) throw new Error("Bad Request");
 
     const meRole = req.me?.role;
-    if (!meRole || (meRole !== "cashier" && meRole !== "manager" && meRole !== "superuser")) {
-      throw new Error("Unauthorized");
-    }
-
     const isManagerOrHigher = meRole === "manager" || meRole === "superuser";
 
     const selectFields = isManagerOrHigher
@@ -339,11 +335,18 @@ const patchUserById = async (req, res, next) => {
     }
 
     // Validate verified if provided
-    if (verified !== undefined && verified !== true) throw new Error("Bad Request");
+    if (verified !== undefined) {
+      if (verified !== true && verified !== "true") {
+        throw new Error("Bad Request");
+      }
+    }
 
     // Validate suspicious if provided
-    if (suspicious !== undefined && typeof suspicious !== "boolean")
-      throw new Error("Bad Request");
+    if (suspicious !== undefined) {
+      if (typeof suspicious !== "boolean") {
+        throw new Error("Bad Request");
+      }
+    }
 
     const current = await prisma.user.findUnique({
       where: { id },
@@ -352,12 +355,12 @@ const patchUserById = async (req, res, next) => {
     if (!current) throw new Error("Not Found");
 
     // Cannot set cashier as suspicious
-    if (role === "cashier" && suspicious === true) {
+    if (role === "cashier" && (suspicious === true || suspicious === "true")) {
       throw new Error("Bad Request");
     }
     
     // Cannot set currently suspicious user to cashier without clearing suspicious flag
-    if (role === "cashier" && current.suspicious === true && suspicious !== false) {
+    if (role === "cashier" && current.suspicious === true && suspicious !== false && suspicious !== "false") {
       throw new Error("Bad Request");
     }
 
@@ -365,8 +368,8 @@ const patchUserById = async (req, res, next) => {
     const response = { id: current.id, utorid: current.utorid, name: current.name };
 
     if (email !== undefined) data.email = email.toLowerCase();
-    if (verified !== undefined) data.verified = true;
-    if (suspicious !== undefined) data.suspicious = suspicious;
+    if (verified !== undefined) data.verified = true; // Always true when provided
+    if (suspicious !== undefined) data.suspicious = Boolean(suspicious);
     if (role !== undefined) data.role = role;
 
     // Auto-clear suspicious flag when promoting to cashier

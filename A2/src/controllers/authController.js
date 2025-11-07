@@ -143,6 +143,7 @@ const resetPassword = async (req, res, next) => {
         password: hashedPassword,
         resetToken: null,
         resetExpiresAt: null,
+        verified: true,
       },
     });
 

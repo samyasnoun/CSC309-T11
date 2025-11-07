@@ -1,6 +1,7 @@
 const prisma = require("../prismaClient");
 
-const VALID_TYPES = ["automatic", "onetime"];
+const VALID_TYPES = ["automatic", "one-time"];
+const TYPE_MAP = { "automatic": "automatic", "one-time": "onetime" };
 
 async function loadViewer(req) {
   if (!req.auth || typeof req.auth.userId !== "number") return null;
@@ -12,7 +13,7 @@ function serializePromotion(promotion) {
     id: promotion.id,
     name: promotion.name,
     description: promotion.description,
-    type: promotion.type,
+    type: promotion.type === "onetime" ? "one-time" : promotion.type,
     startTime: promotion.startTime,
     endTime: promotion.endTime,
     rate: promotion.rate,
@@ -34,7 +35,7 @@ const postPromotion = async (req, res, next) => {
       minSpending,
     } = req.body ?? {};
 
-    if (!name || !description || !type || !startTime || !endTime) {
+    if (name === undefined || description === undefined || type === undefined || startTime === undefined || endTime === undefined) {
       throw new Error("Bad Request");
     }
 
@@ -55,7 +56,7 @@ const postPromotion = async (req, res, next) => {
     const data = {
       name,
       description,
-      type,
+      type: TYPE_MAP[type],
       startTime: start,
       endTime: end,
     };
@@ -75,7 +76,7 @@ const postPromotion = async (req, res, next) => {
         if (!Number.isInteger(pts) || pts < 0) throw new Error("Bad Request");
         data.points = pts;
       }
-    } else if (type === "onetime") {
+    } else if (type === "one-time" || type === "onetime") {
       const ptsVal = Number(points);
       if (!Number.isInteger(ptsVal) || ptsVal <= 0) {
         throw new Error("Bad Request");
@@ -137,9 +138,6 @@ const getPromotions = async (req, res, next) => {
     if (role === "regular" || role === "cashier") {
       filters.push({ startTime: { lte: now } });
       filters.push({ endTime: { gte: now } });
-      if (viewer) {
-        filters.push({ usedByUsers: { none: { id: viewer.id } } });
-      }
     }
 
     const where = filters.length ? { AND: filters } : {};
@@ -148,13 +146,18 @@ const getPromotions = async (req, res, next) => {
       where,
       orderBy: { startTime: "asc" },
       include: {
-        usedByUsers: role === "regular" || role === "cashier" ? { select: { id: true } } : false,
+        usedByUsers: { select: { id: true } },
       },
     });
 
     // For regular users, filter out used promotions
     if ((role === "regular" || role === "cashier") && viewer) {
-      allPromotions = allPromotions.filter(p => !p.usedByUsers.some(u => u.id === viewer.id));
+      allPromotions = allPromotions.filter(p => {
+        if (p.type === "onetime") {
+          return !p.usedByUsers.some(u => u.id === viewer.id);
+        }
+        return true;
+      });
     }
 
     const count = allPromotions.length;
@@ -188,7 +191,7 @@ const getPromotionById = async (req, res, next) => {
       if (!(promotion.startTime <= now && promotion.endTime >= now)) {
         throw new Error("Not Found");
       }
-      if (viewer && promotion.usedByUsers.some(u => u.id === viewer.id)) {
+      if (viewer && promotion.type === "onetime" && promotion.usedByUsers.some(u => u.id === viewer.id)) {
         throw new Error("Not Found");
       }
     }
@@ -262,7 +265,7 @@ const patchPromotionById = async (req, res, next) => {
 
     if (type !== undefined) {
       if (!VALID_TYPES.includes(type)) throw new Error("Bad Request");
-      data.type = type;
+      data.type = TYPE_MAP[type];
     }
 
     if (data.startTime && data.endTime && data.endTime <= data.startTime) {

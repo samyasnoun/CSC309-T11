@@ -24,7 +24,7 @@ enum TransactionType {
 
 enum PromotionType {
   automatic
-  onetime
+  onetime  @map("one-time")
 }
 
 model User {

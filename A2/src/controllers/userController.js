@@ -112,9 +112,10 @@ const getUsers = async (req, res, next) => {
     const where = {};
 
     if (name) {
+      const searchTerm = String(name).toLowerCase();
       where.OR = [
-        { utorid: { contains: String(name), mode: "insensitive" } },
-        { name: { contains: String(name), mode: "insensitive" } },
+        { utorid: { contains: searchTerm } },
+        { name: { contains: searchTerm } },
       ];
     }
 
@@ -290,12 +291,17 @@ const patchUserById = async (req, res, next) => {
 
     const { email, verified, suspicious, role } = req.body;
 
-    if (
-      email === undefined &&
-      verified === undefined &&
-      suspicious === undefined &&
-      role === undefined
-    ) throw new Error("Bad Request");
+    // Check if at least one valid field is present
+    const hasValidFields = email !== undefined || verified !== undefined || suspicious !== undefined || role !== undefined;
+    
+    // Check for extra fields
+    const allowedFields = ['email', 'verified', 'suspicious', 'role'];
+    const requestFields = Object.keys(req.body);
+    const hasExtraFields = requestFields.some(field => !allowedFields.includes(field));
+    
+    if (!hasValidFields || hasExtraFields) {
+      throw new Error("Bad Request");
+    }
 
     const meRole = req.me?.role;
     if (!meRole) throw new Error("Unauthorized");
@@ -337,11 +343,12 @@ const patchUserById = async (req, res, next) => {
     if (suspicious !== undefined) data.suspicious = suspicious;
     if (role !== undefined) data.role = role;
 
-    if (role === "cashier") {
-      if (suspicious === true) throw new Error("Bad Request");
-      if (current.suspicious === true && suspicious === undefined) {
-        data.suspicious = false;
-      }
+    if (role === "cashier" && suspicious === true) {
+      throw new Error("Bad Request");
+    }
+    
+    if (role === "cashier" && current.suspicious === true && suspicious === undefined) {
+      data.suspicious = false;
     }
 
     const updated = await prisma.user.update({
@@ -380,12 +387,15 @@ const patchCurrentUser = async (req, res, next) => {
 
     const { name, email, birthday, avatar } = req.body ?? {};
 
-    if (
-      name === undefined &&
-      email === undefined &&
-      birthday === undefined &&
-      avatar === undefined
-    ) {
+    // Check if at least one valid field is present
+    const hasValidFields = name !== undefined || email !== undefined || birthday !== undefined || avatar !== undefined;
+    
+    // Check for extra fields
+    const allowedFields = ['name', 'email', 'birthday', 'avatar'];
+    const requestFields = Object.keys(req.body);
+    const hasExtraFields = requestFields.some(field => !allowedFields.includes(field));
+    
+    if (!hasValidFields || hasExtraFields) {
       throw new Error("Bad Request");
     }
 

@@ -53,14 +53,15 @@ function ensureCapacity(event) {
 
 const postEvent = async (req, res, next) => {
     try {
-        if (!req.me) {
-            return res.status(401).json({ error: "Unauthorized" });
-        }
         const { name, description, location, startTime, endTime, capacity, points } =
             req.body ?? {};
 
         if (name === undefined || description === undefined || location === undefined || startTime === undefined || endTime === undefined || points === undefined) {
             throw new Error("Bad Request");
+        }
+
+        if (!req.me) {
+            return res.status(403).json({ error: "Forbidden" });
         }
 
         if (
@@ -121,9 +122,6 @@ const postEvent = async (req, res, next) => {
 
         return res.status(201).json(serializeEvent(event));
     } catch (err) {
-        if (err.statusCode === 410) {
-            return res.status(410).json({ error: "Gone" });
-        }
         next(err);
     }
 };
@@ -433,9 +431,6 @@ const patchEventById = async (req, res, next) => {
 
         return res.status(200).json(response);
     } catch (err) {
-        if (err.statusCode === 410) {
-            return res.status(410).json({ error: "Gone" });
-        }
         next(err);
     }
 };
@@ -479,9 +474,7 @@ const postOrganizerToEvent = async (req, res, next) => {
         if (!event) throw new Error("Not Found");
 
         if (event.endTime <= new Date()) {
-            const error = new Error("Gone");
-            error.statusCode = 410;
-            throw error;
+            throw new Error("Gone");
         }
 
         const target = await prisma.user.findFirst({
@@ -490,9 +483,7 @@ const postOrganizerToEvent = async (req, res, next) => {
         });
 
         if (!target) {
-            const error = new Error("Not Found");
-            error.statusCode = 404;
-            throw error;
+            throw new Error("Not Found");
         }
 
         if (event.organizers.some((o) => o.id === target.id)) {
@@ -521,9 +512,6 @@ const postOrganizerToEvent = async (req, res, next) => {
             organizers: updated.organizers,
         });
     } catch (err) {
-        if (err.statusCode === 410) {
-            return res.status(410).json({ error: "Gone" });
-        }
         next(err);
     }
 };
@@ -546,9 +534,7 @@ const removeOrganizerFromEvent = async (req, res, next) => {
         if (!event) throw new Error("Not Found");
 
         if (event.endTime <= new Date()) {
-            const error = new Error("Gone");
-            error.statusCode = 410;
-            throw error;
+            throw new Error("Gone");
         }
 
         const isOrganizer = event.organizers.some((o) => o.id === userId);
@@ -572,9 +558,6 @@ const removeOrganizerFromEvent = async (req, res, next) => {
 
         return res.status(204).send();
     } catch (err) {
-        if (err.statusCode === 410) {
-            return res.status(410).json({ error: "Gone" });
-        }
         next(err);
     }
 };
@@ -599,9 +582,7 @@ const postGuestToEvent = async (req, res, next) => {
         if (!event) throw new Error("Not Found");
 
         if (event.endTime <= new Date()) {
-            const error = new Error("Gone");
-            error.statusCode = 410;
-            throw error;
+            throw new Error("Gone");
         }
 
         ensureCapacity(event);
@@ -612,9 +593,7 @@ const postGuestToEvent = async (req, res, next) => {
         });
 
         if (!target) {
-            const error = new Error("Not Found");
-            error.statusCode = 404;
-            throw error;
+            throw new Error("Not Found");
         }
 
         if (event.organizers.some((o) => o.id === target.id)) {
@@ -645,9 +624,6 @@ const postGuestToEvent = async (req, res, next) => {
             numGuests: updated._count.guests,
         });
     } catch (err) {
-        if (err.statusCode === 410) {
-            return res.status(410).json({ error: "Gone" });
-        }
         next(err);
     }
 };
@@ -668,9 +644,7 @@ const deleteGuestFromEvent = async (req, res, next) => {
         if (!event) throw new Error("Not Found");
 
         if (event.endTime <= new Date()) {
-            const error = new Error("Gone");
-            error.statusCode = 410;
-            throw error;
+            throw new Error("Gone");
         }
 
         if (!event.guests.some((g) => g.id === userId)) {
@@ -684,9 +658,6 @@ const deleteGuestFromEvent = async (req, res, next) => {
 
         return res.status(200).json({ id: userId });
     } catch (err) {
-        if (err.statusCode === 410) {
-            return res.status(410).json({ error: "Gone" });
-        }
         next(err);
     }
 };
@@ -711,15 +682,11 @@ const postCurrentUserToEvent = async (req, res, next) => {
         if (!event) throw new Error("Not Found");
 
         if (!event.published) {
-            const error = new Error("Not Found");
-            error.statusCode = 404;
-            throw error;
+            throw new Error("Not Found");
         }
 
         if (event.endTime <= new Date()) {
-            const error = new Error("Gone");
-            error.statusCode = 410;
-            throw error;
+            throw new Error("Gone");
         }
 
         if (event.organizers.some((o) => o.id === viewer.id)) {
@@ -750,9 +717,6 @@ const postCurrentUserToEvent = async (req, res, next) => {
             numGuests: updated._count.guests,
         });
     } catch (err) {
-        if (err.statusCode === 410) {
-            return res.status(410).json({ error: "Gone" });
-        }
         next(err);
     }
 };
@@ -775,9 +739,7 @@ const removeCurrentUserFromEvent = async (req, res, next) => {
         if (!event) throw new Error("Not Found");
 
         if (event.endTime <= new Date()) {
-            const error = new Error("Gone");
-            error.statusCode = 410;
-            throw error;
+            throw new Error("Gone");
         }
 
         if (!event.guests.some((g) => g.id === viewer.id)) {
@@ -791,9 +753,6 @@ const removeCurrentUserFromEvent = async (req, res, next) => {
 
         return res.status(204).send();
     } catch (err) {
-        if (err.statusCode === 410) {
-            return res.status(410).json({ error: "Gone" });
-        }
         next(err);
     }
 };

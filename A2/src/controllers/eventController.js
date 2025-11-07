@@ -47,7 +47,7 @@ async function loadViewer(req) {
 
 function ensureCapacity(event) {
     if (event.capacity !== null && event._count.guests >= event.capacity) {
-        throw new Error("Bad Request");
+        throw new Error("Gone");
     }
 }
 

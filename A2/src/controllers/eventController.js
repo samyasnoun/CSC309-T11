@@ -300,6 +300,11 @@ const patchEventById = async (req, res, next) => {
             published,
         } = req.body ?? {};
 
+        // Check for empty body
+        if (Object.keys(req.body).length === 0) {
+            throw new Error("Bad Request");
+        }
+
         const existing = await prisma.event.findUnique({
             where: { id },
             include: {

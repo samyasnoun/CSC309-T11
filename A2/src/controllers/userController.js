@@ -310,7 +310,6 @@ const patchUserById = async (req, res, next) => {
     }
 
     const meRole = req.me?.role;
-    if (!meRole) throw new Error("Unauthorized");
 
     // Validate role if provided
     if (role !== undefined) {
@@ -334,16 +333,16 @@ const patchUserById = async (req, res, next) => {
       if (!emailOk) throw new Error("Bad Request");
     }
 
-    // Validate verified if provided
+    // Validate verified if provided (can be true or "true")
     if (verified !== undefined) {
-      if (verified !== true && verified !== "true") {
+      if (verified !== true && verified !== "true" && verified !== false && verified !== "false") {
         throw new Error("Bad Request");
       }
     }
 
-    // Validate suspicious if provided
+    // Validate suspicious if provided (can be boolean or string boolean)
     if (suspicious !== undefined) {
-      if (typeof suspicious !== "boolean") {
+      if (typeof suspicious !== "boolean" && suspicious !== "true" && suspicious !== "false") {
         throw new Error("Bad Request");
       }
     }
@@ -354,13 +353,17 @@ const patchUserById = async (req, res, next) => {
     });
     if (!current) throw new Error("Not Found");
 
+    // Convert string booleans to actual booleans for logic checks
+    const suspiciousBool = suspicious === true || suspicious === "true";
+    const suspiciousClear = suspicious === false || suspicious === "false";
+
     // Cannot set cashier as suspicious
-    if (role === "cashier" && (suspicious === true || suspicious === "true")) {
+    if (role === "cashier" && suspiciousBool) {
       throw new Error("Bad Request");
     }
     
     // Cannot set currently suspicious user to cashier without clearing suspicious flag
-    if (role === "cashier" && current.suspicious === true && suspicious !== false && suspicious !== "false") {
+    if (role === "cashier" && current.suspicious === true && !suspiciousClear) {
       throw new Error("Bad Request");
     }
 
@@ -368,8 +371,8 @@ const patchUserById = async (req, res, next) => {
     const response = { id: current.id, utorid: current.utorid, name: current.name };
 
     if (email !== undefined) data.email = email.toLowerCase();
-    if (verified !== undefined) data.verified = true; // Always true when provided
-    if (suspicious !== undefined) data.suspicious = Boolean(suspicious);
+    if (verified !== undefined) data.verified = (verified === true || verified === "true");
+    if (suspicious !== undefined) data.suspicious = (suspicious === true || suspicious === "true");
     if (role !== undefined) data.role = role;
 
     // Auto-clear suspicious flag when promoting to cashier

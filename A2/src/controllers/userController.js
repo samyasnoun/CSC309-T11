@@ -303,15 +303,12 @@ const patchUserById = async (req, res, next) => {
 
     const { email, verified, suspicious, role } = req.body;
 
-    // Check if at least one valid field is present
-    const hasValidFields = email !== undefined || verified !== undefined || suspicious !== undefined || role !== undefined;
-    
     // Check for extra fields
     const allowedFields = ['email', 'verified', 'suspicious', 'role'];
     const requestFields = Object.keys(req.body);
     const hasExtraFields = requestFields.some(field => !allowedFields.includes(field));
     
-    if (!hasValidFields || hasExtraFields) {
+    if (hasExtraFields) {
       throw new Error("Bad Request");
     }
 
@@ -322,11 +319,17 @@ const patchUserById = async (req, res, next) => {
       if (!["regular", "cashier", "manager", "superuser"].includes(role))
         throw new Error("Bad Request");
 
-      if (meRole === "manager" && !["regular", "cashier"].includes(role))
+      if (meRole === "manager" && !["regular", "cashier", "manager"].includes(role))
         throw new Error("Forbidden");
       
       if (meRole === "superuser" && role === "superuser" && id === req.me.id) {
         throw new Error("Bad Request");
+      }
+    }
+    
+    if (suspicious !== undefined) {
+      if (meRole !== "manager" && meRole !== "superuser") {
+        throw new Error("Forbidden");
       }
     }
 
@@ -399,15 +402,12 @@ const patchCurrentUser = async (req, res, next) => {
 
     const { name, email, birthday, avatar } = req.body ?? {};
 
-    // Check if at least one valid field is present
-    const hasValidFields = name !== undefined || email !== undefined || birthday !== undefined || avatar !== undefined;
-    
     // Check for extra fields
     const allowedFields = ['name', 'email', 'birthday', 'avatar'];
     const requestFields = Object.keys(req.body);
     const hasExtraFields = requestFields.some(field => !allowedFields.includes(field));
     
-    if (!hasValidFields || hasExtraFields) {
+    if (hasExtraFields) {
       throw new Error("Bad Request");
     }
 

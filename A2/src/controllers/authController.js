@@ -52,18 +52,22 @@ const requestPasswordReset = async (req, res, next) => {
       throw new Error("Bad Request");
     }
 
-    const utoridKey = String(utorid).toLowerCase();
-
+    // Rate limit by IP address
+    const ipAddress = req.ip || req.connection.remoteAddress;
     const now = Date.now();
-    const lastRequestTime = rateLimiter.get(utoridKey);
+    const lastRequestTime = rateLimiter.get(ipAddress);
 
     if (lastRequestTime && now - lastRequestTime < 60 * 1000) {
-      return res.status(429).json({ error: "Too many requests" });
+      return res.status(429).json({ error: "Too Many Requests" });
     }
 
+    const utoridKey = String(utorid).toLowerCase();
     const user = await prisma.user.findUnique({ where: { utorid: utoridKey } });
     if (!user) {
-      throw new Error("Not Found");
+      return res.status(202).json({
+        expiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+        resetToken: uuidv4(),
+      });
     }
 
     const resetToken = uuidv4();
@@ -77,8 +81,9 @@ const requestPasswordReset = async (req, res, next) => {
       },
     });
 
-    rateLimiter.set(utoridKey, now);
+    rateLimiter.set(ipAddress, now);
 
+    // Clean up old entries
     if (rateLimiter.size > 1000) {
       const cutoff = now - 60 * 1000;
       for (const [key, timestamp] of rateLimiter.entries()) {
@@ -125,8 +130,9 @@ const resetPassword = async (req, res, next) => {
       throw new Error("Not Found");
     }
 
+    // Check if token has expired
     if (tokenOwner.resetExpiresAt && new Date() > tokenOwner.resetExpiresAt) {
-      throw new Error("Not Found");
+      throw new Error("Gone");
     }
 
     const normalizedUtorid = String(utorid).toLowerCase();
@@ -137,6 +143,7 @@ const resetPassword = async (req, res, next) => {
 
     const hashedPassword = await hashPassword(password);
 
+    // Clear the reset token to prevent reuse
     await prisma.user.update({
       where: { id: tokenOwner.id },
       data: {

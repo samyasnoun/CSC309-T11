@@ -35,7 +35,7 @@ router.post("/:eventId/organizers", authenticate, attachUser, canManageEvent(), 
 router.delete("/:eventId/organizers/:userId", authenticate, attachUser, canManageEvent(), removeOrganizerFromEvent);
 
 router.post("/:eventId/guests", authenticate, attachUser, canManageEvent(), postGuestToEvent);
-router.delete("/:eventId/guests/:userId", authenticate, attachUser, canManageEvent(), deleteGuestFromEvent);
+router.delete("/:eventId/guests/:userId", authenticate, requires("manager"), deleteGuestFromEvent);
 
 // Regular users RSVP to events
 router.post("/:eventId/guests/me", authenticate, attachUser, postCurrentUserToEvent);

@@ -304,17 +304,30 @@ const getTransactionById = async (req, res, next) => {
 
     if (!t) throw new Error("Not Found");
 
-    return res.status(200).json({
+    const response = {
       id: t.id,
       utorid: t.user.utorid,
       type: t.type,
-      spent: t.spent,
       amount: t.amount,
       promotionIds: t.promotions.map((p) => p.id),
       suspicious: t.suspicious,
-      remark: t.remark,
+      remark: t.remark || "",
       createdBy: t.createdBy?.utorid || null,
-    });
+    };
+
+    if (t.spent !== null && t.spent !== undefined) {
+      response.spent = t.spent;
+    }
+
+    if (t.redeemed !== null && t.redeemed !== undefined) {
+      response.redeemed = t.redeemed;
+    }
+
+    if (t.relatedId !== null && t.relatedId !== undefined) {
+      response.relatedId = t.relatedId;
+    }
+
+    return res.status(200).json(response);
   } catch (err) {
     next(err);
   }

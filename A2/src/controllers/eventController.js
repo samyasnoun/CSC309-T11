@@ -72,7 +72,7 @@ const postEvent = async (req, res, next) => {
             throw new Error("Bad Request");
         }
 
-        if (name.length > 100 || description.length > 1000 || location.length > 200) {
+        if (name.trim().length === 0 || name.length > 100 || description.trim().length === 0 || description.length > 1000 || location.trim().length === 0 || location.length > 200) {
             throw new Error("Bad Request");
         }
 
@@ -102,9 +102,9 @@ const postEvent = async (req, res, next) => {
 
         const event = await prisma.event.create({
             data: {
-                name,
-                description,
-                location,
+                name: name.trim(),
+                description: description.trim(),
+                location: location.trim(),
                 startTime: start,
                 endTime: end,
                 capacity: capacityValue,
@@ -310,6 +310,7 @@ const patchEventById = async (req, res, next) => {
             include: {
                 organizers: { select: { id: true } },
                 guests: { select: { id: true } },
+                _count: { select: { guests: true } },
             },
         });
 
@@ -317,7 +318,7 @@ const patchEventById = async (req, res, next) => {
 
         const now = new Date();
         if (existing.endTime <= now) {
-            if (name !== undefined || description !== undefined || location !== undefined) {
+            if (name !== undefined || description !== undefined || location !== undefined || startTime !== undefined || endTime !== undefined || capacity !== undefined) {
                 throw new Error("Bad Request");
             }
         }
@@ -357,16 +358,23 @@ const patchEventById = async (req, res, next) => {
             data.endTime = end;
         }
 
-        if (data.startTime && data.endTime && data.endTime <= data.startTime) {
+        // Check time consistency
+        const finalStartTime = data.startTime || existing.startTime;
+        const finalEndTime = data.endTime || existing.endTime;
+        if (finalEndTime <= finalStartTime) {
             throw new Error("Bad Request");
         }
 
         if (capacity !== undefined) {
             if (capacity === null) {
+                // Cannot update capacity to unlimited if it was created with a limited capacity
+                if (existing.capacity !== null) {
+                    throw new Error("Bad Request");
+                }
                 data.capacity = null;
             } else if (!Number.isInteger(capacity) || capacity <= 0) {
                 throw new Error("Bad Request");
-            } else if (existing.guests.length > capacity) {
+            } else if (existing._count.guests > capacity) {
                 throw new Error("Bad Request");
             } else {
                 data.capacity = capacity;

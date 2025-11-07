@@ -22,6 +22,24 @@ function serializePromotion(promotion) {
   };
 }
 
+function serializePromotionList(promotion, includeStartTime = false) {
+  const result = {
+    id: promotion.id,
+    name: promotion.name,
+    type: promotion.type === "onetime" ? "one-time" : promotion.type,
+    endTime: promotion.endTime,
+    minSpending: promotion.minSpending,
+    rate: promotion.rate,
+    points: promotion.points,
+  };
+  
+  if (includeStartTime) {
+    result.startTime = promotion.startTime;
+  }
+  
+  return result;
+}
+
 const postPromotion = async (req, res, next) => {
   try {
     const {
@@ -39,8 +57,8 @@ const postPromotion = async (req, res, next) => {
       throw new Error("Bad Request");
     }
 
-    if (typeof name !== "string" || name.length > 120) throw new Error("Bad Request");
-    if (typeof description !== "string" || description.length > 1000)
+    if (typeof name !== "string" || name.trim().length === 0 || name.length > 120) throw new Error("Bad Request");
+    if (typeof description !== "string" || description.trim().length === 0 || description.length > 1000)
       throw new Error("Bad Request");
 
     if (!VALID_TYPES.includes(type)) {
@@ -54,8 +72,8 @@ const postPromotion = async (req, res, next) => {
     }
 
     const data = {
-      name,
-      description,
+      name: name.trim(),
+      description: description.trim(),
       type: TYPE_MAP[type],
       startTime: start,
       endTime: end,
@@ -84,7 +102,7 @@ const postPromotion = async (req, res, next) => {
       data.points = ptsVal;
       if (rate !== undefined) {
         const rateVal = Number(rate);
-        if (rateVal <= 0) throw new Error("Bad Request");
+        if (!Number.isFinite(rateVal) || rateVal <= 0) throw new Error("Bad Request");
         data.rate = rateVal;
       }
     }
@@ -164,7 +182,9 @@ const getPromotions = async (req, res, next) => {
     const count = allPromotions.length;
     const paginatedPromotions = allPromotions.slice((pageNum - 1) * limitNum, pageNum * limitNum);
 
-    return res.status(200).json({ count, results: paginatedPromotions.map(serializePromotion) });
+    // Managers can see startTime, regular users cannot
+    const includeStartTime = role === "manager" || role === "superuser";
+    return res.status(200).json({ count, results: paginatedPromotions.map(p => serializePromotionList(p, includeStartTime)) });
   } catch (err) {
     next(err);
   }
@@ -195,6 +215,17 @@ const getPromotionById = async (req, res, next) => {
       if (viewer && promotion.type === "onetime" && promotion.usedByUsers.some(u => u.id === viewer.id)) {
         throw new Error("Not Found");
       }
+      // Regular users don't see startTime
+      return res.status(200).json({
+        id: promotion.id,
+        name: promotion.name,
+        description: promotion.description,
+        type: promotion.type === "onetime" ? "one-time" : promotion.type,
+        endTime: promotion.endTime,
+        rate: promotion.rate,
+        points: promotion.points,
+        minSpending: promotion.minSpending,
+      });
     }
 
     return res.status(200).json(serializePromotion(promotion));
@@ -230,8 +261,7 @@ const patchPromotionById = async (req, res, next) => {
     const now = new Date();
 
     if (promotion.startTime <= now) {
-      if (startTime !== undefined) throw new Error("Bad Request");
-      if (name !== undefined || description !== undefined || type !== undefined || rate !== undefined || points !== undefined || minSpending !== undefined) {
+      if (startTime !== undefined || name !== undefined || description !== undefined || type !== undefined || rate !== undefined || points !== undefined || minSpending !== undefined) {
         throw new Error("Bad Request");
       }
     }
@@ -269,7 +299,10 @@ const patchPromotionById = async (req, res, next) => {
       data.type = TYPE_MAP[type];
     }
 
-    if (data.startTime && data.endTime && data.endTime <= data.startTime) {
+    // Check time consistency
+    const finalStartTime = data.startTime || promotion.startTime;
+    const finalEndTime = data.endTime || promotion.endTime;
+    if (finalEndTime <= finalStartTime) {
       throw new Error("Bad Request");
     }
 
@@ -300,12 +333,12 @@ const patchPromotionById = async (req, res, next) => {
     const response = {
       id: updated.id,
       name: updated.name,
-      type: updated.type,
+      type: updated.type === "onetime" ? "one-time" : updated.type,
     };
     
     if (name !== undefined) response.name = updated.name;
     if (description !== undefined) response.description = updated.description;
-    if (type !== undefined) response.type = updated.type;
+    if (type !== undefined) response.type = updated.type === "onetime" ? "one-time" : updated.type;
     if (startTime !== undefined) response.startTime = updated.startTime;
     if (endTime !== undefined) response.endTime = updated.endTime;
     if (rate !== undefined) response.rate = updated.rate;
@@ -332,7 +365,7 @@ const deletePromotionById = async (req, res, next) => {
 
     await prisma.promotion.delete({ where: { id } });
 
-    return res.status(200).json({ id });
+    return res.status(204).send();
   } catch (err) {
     next(err);
   }

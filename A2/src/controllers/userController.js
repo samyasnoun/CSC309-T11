@@ -77,14 +77,16 @@ const postUser = async (req, res, next) => {
         verified: true,
         resetToken: true,
         resetExpiresAt: true,
-        role: true,
-        points: true,
-        suspicious: true,
       },
     });
 
     return res.status(201).json({
-      ...user,
+      id: user.id,
+      utorid: user.utorid,
+      name: user.name,
+      email: user.email,
+      verified: user.verified,
+      resetToken: user.resetToken,
       expiresAt: user.resetExpiresAt.toISOString(),
     });
   } catch (err) {
@@ -114,8 +116,8 @@ const getUsers = async (req, res, next) => {
     if (name) {
       const searchTerm = String(name);
       where.OR = [
-        { utorid: { contains: searchTerm } },
-        { name: { contains: searchTerm } },
+        { utorid: { contains: searchTerm, mode: "insensitive" } },
+        { name: { contains: searchTerm, mode: "insensitive" } },
       ];
     }
 
@@ -155,7 +157,6 @@ const getUsers = async (req, res, next) => {
         lastLogin: true,
         verified: true,
         avatarUrl: true,
-        suspicious: true,
       },
     });
 
@@ -315,32 +316,37 @@ const patchUserById = async (req, res, next) => {
     const meRole = req.me?.role;
     if (!meRole) throw new Error("Unauthorized");
 
+    // Managers and superusers can patch users
+    if (meRole !== "manager" && meRole !== "superuser") {
+      throw new Error("Forbidden");
+    }
+
+    // Validate role if provided
     if (role !== undefined) {
       if (!["regular", "cashier", "manager", "superuser"].includes(role))
         throw new Error("Bad Request");
 
-      if (meRole === "manager" && !["regular", "cashier", "manager"].includes(role))
+      // Managers cannot assign superuser role
+      if (meRole === "manager" && role === "superuser")
         throw new Error("Forbidden");
       
-      if (meRole === "superuser" && role === "superuser" && id === req.me.id) {
+      // Superusers cannot demote themselves
+      if (meRole === "superuser" && role !== "superuser" && id === req.me.id) {
         throw new Error("Bad Request");
       }
     }
-    
-    if (suspicious !== undefined) {
-      if (meRole !== "manager" && meRole !== "superuser") {
-        throw new Error("Forbidden");
-      }
-    }
 
+    // Validate email if provided
     if (email !== undefined) {
       const emailOk = typeof email === "string" &&
         /^[A-Za-z0-9._%+-]+@(mail\.)?utoronto\.ca$/.test(email);
       if (!emailOk) throw new Error("Bad Request");
     }
 
+    // Validate verified if provided
     if (verified !== undefined && verified !== true) throw new Error("Bad Request");
 
+    // Validate suspicious if provided
     if (suspicious !== undefined && typeof suspicious !== "boolean")
       throw new Error("Bad Request");
 
@@ -350,6 +356,16 @@ const patchUserById = async (req, res, next) => {
     });
     if (!current) throw new Error("Not Found");
 
+    // Cannot set cashier as suspicious
+    if (role === "cashier" && suspicious === true) {
+      throw new Error("Bad Request");
+    }
+    
+    // Cannot set currently suspicious user to cashier without clearing suspicious flag
+    if (role === "cashier" && current.suspicious === true && suspicious !== false) {
+      throw new Error("Bad Request");
+    }
+
     const data = {};
     const response = { id: current.id, utorid: current.utorid, name: current.name };
 
@@ -358,10 +374,7 @@ const patchUserById = async (req, res, next) => {
     if (suspicious !== undefined) data.suspicious = suspicious;
     if (role !== undefined) data.role = role;
 
-    if (role === "cashier" && suspicious === true) {
-      throw new Error("Bad Request");
-    }
-    
+    // Auto-clear suspicious flag when promoting to cashier
     if (role === "cashier" && current.suspicious === true && suspicious === undefined) {
       data.suspicious = false;
     }
@@ -512,7 +525,7 @@ const patchCurrentUserPassword = async (req, res, next) => {
 const postRedemptionTransaction = async (req, res, next) => {
   try {
     const me = await loadCurrentUser(req);
-    const { type, amount, remark = "" } = req.body ?? {};
+    const { type, amount, remark } = req.body ?? {};
 
     if (type !== "redemption") throw new Error("Bad Request");
     const amountValue = Number(amount);
@@ -520,12 +533,6 @@ const postRedemptionTransaction = async (req, res, next) => {
 
     if (!me.verified) {
       throw new Error("Forbidden");
-    }
-
-    if (me.points < amountValue) {
-      const error = new Error("Bad Request");
-      error.code = "INSUFFICIENT_POINTS";
-      throw error;
     }
 
     const fresh = await prisma.user.findUnique({
@@ -693,7 +700,7 @@ const postTransferTransaction = async (req, res, next) => {
       throw new Error("Bad Request");
     }
 
-    const { type, amount, remark = "" } = req.body ?? {};
+    const { type, amount, remark } = req.body ?? {};
 
     if (type !== "transfer") throw new Error("Bad Request");
     const amountValue = Number(amount);

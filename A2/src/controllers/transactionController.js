@@ -67,7 +67,7 @@ const postTransaction = async (req, res, next) => {
       }
 
       for (const promo of validPromotions) {
-        if (promo.type === "one-time") {
+        if (promo.type === "onetime") {
           const alreadyUsed = promo.usedByUsers.some(
             (u) => u.id === customer.id
           );

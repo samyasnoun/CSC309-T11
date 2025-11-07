@@ -1,9 +1,45 @@
-I completed this assignment individually without collaboration with other students.
+Group members:
 
-I used the following resources:
-- Course lecture materials and handouts
-- Official documentation for Node.js, Express, Prisma
-- AI assistance via Cursor (Claude) for debugging and code fixes
 
-All work submitted is my own.
+Laith Al Khoury, utorid: alkhou15
+
+Thiyaan Karunanayake, utorid: karun136
+
+Ali Towaiji, utorid: altowaij
+
+Samy Asnoun, utorid: asnounsa
+
+
+Laith and Ali developed the database schema and the directory structure, they defined the routes and the services for JWT and encryption.
+
+Samy worked on the event and promotions endpoints.
+
+Thiyaan worked on the transaction endpoints and developed the middleware.
+
+Laith worked on user endpoints.
+
+Ali also worked on user endpoints and authentication endpoints.
+
+Group members:
+
+
+Laith Al Khoury, utorid: alkhou15
+
+Thiyaan Karunanayake, utorid: karun136
+
+Ali Towaiji, utorid: altowaij
+
+Samy Asnoun, utorid: asnounsa
+
+
+Laith and Ali developed the database schema and the directory structure, they defined the routes and the services for JWT and encryption.
+
+Samy worked on the event and promotions endpoints.
+
+Thiyaan worked on the transaction endpoints and developed the middleware.
+
+Laith worked on user endpoints.
+
+Ali also worked on user endpoints and authentication endpoints.
+
 

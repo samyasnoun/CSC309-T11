@@ -115,8 +115,9 @@ const getPromotions = async (req, res, next) => {
     const filters = [];
 
     if (type !== undefined) {
-      if (!VALID_TYPES.includes(String(type))) throw new Error("Bad Request");
-      filters.push({ type: String(type) });
+      const typeStr = String(type);
+      if (!VALID_TYPES.includes(typeStr)) throw new Error("Bad Request");
+      filters.push({ type: TYPE_MAP[typeStr] || typeStr });
     }
 
     if (started !== undefined && ended !== undefined) {

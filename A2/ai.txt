@@ -1,0 +1,10 @@
+I used AI assistance (Claude via Cursor) to help debug and fix failing test cases in this assignment.
+
+The AI helped with:
+- Identifying validation issues in controllers
+- Fixing status code logic for events, promotions, and transactions
+- Creating the optionalAuth middleware for public endpoints
+- Debugging schema compliance issues in API responses
+- Improving error handling and input validation
+
+All code was reviewed and tested by me before submission.

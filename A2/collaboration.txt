@@ -1,0 +1,9 @@
+I completed this assignment individually without collaboration with other students.
+
+I used the following resources:
+- Course lecture materials and handouts
+- Official documentation for Node.js, Express, Prisma
+- AI assistance via Cursor (Claude) for debugging and code fixes
+
+All work submitted is my own.
+

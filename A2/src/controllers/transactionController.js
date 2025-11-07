@@ -103,7 +103,7 @@ const postTransaction = async (req, res, next) => {
           connect: validPromotions.map((p) => ({ id: p.id })),
         },
       },
-      include: { promotions: { select: { id: true } } },
+      include: { promotions: true },
     });
 
     if (!suspicious) {
@@ -159,7 +159,7 @@ const adjustmentTransaction = async (req, res, next) => {
     const normalizedUtorid = utorid.toLowerCase();
 
     const customer = await prisma.user.findUnique({ where: { utorid: normalizedUtorid } });
-    if (!customer) throw new Error("Bad Request");
+    if (!customer) throw new Error("Not Found");
 
     const relatedTransaction = await prisma.transaction.findUnique({
       where: { id: relId },
@@ -619,7 +619,7 @@ const patchRedemptionTransactionStatusById = async (req, res, next) => {
       processedBy: processor?.utorid || null,
       redeemed: Math.abs(result.amount),
       remark: result.remark || "",
-      createdBy: result.createdBy?.utorid || null,
+      createdBy: result.createdBy?.utorid || result.user.utorid,
     });
   } catch (err) {
     next(err);

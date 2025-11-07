@@ -112,10 +112,10 @@ const getUsers = async (req, res, next) => {
     const where = {};
 
     if (name) {
-      const searchTerm = String(name).toLowerCase();
+      const searchTerm = String(name);
       where.OR = [
-        { utorid: { contains: searchTerm } },
-        { name: { contains: searchTerm } },
+        { utorid: { contains: searchTerm, mode: 'insensitive' } },
+        { name: { contains: searchTerm, mode: 'insensitive' } },
       ];
     }
 

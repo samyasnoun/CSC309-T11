@@ -303,12 +303,12 @@ const patchUserById = async (req, res, next) => {
 
     const { email, verified, suspicious, role } = req.body;
 
-    // Check for extra fields
+    // Check for extra fields and empty body
     const allowedFields = ['email', 'verified', 'suspicious', 'role'];
     const requestFields = Object.keys(req.body);
     const hasExtraFields = requestFields.some(field => !allowedFields.includes(field));
     
-    if (hasExtraFields) {
+    if (requestFields.length === 0 || hasExtraFields) {
       throw new Error("Bad Request");
     }
 
@@ -402,12 +402,12 @@ const patchCurrentUser = async (req, res, next) => {
 
     const { name, email, birthday, avatar } = req.body ?? {};
 
-    // Check for extra fields
+    // Check for extra fields and empty body
     const allowedFields = ['name', 'email', 'birthday', 'avatar'];
     const requestFields = Object.keys(req.body);
     const hasExtraFields = requestFields.some(field => !allowedFields.includes(field));
     
-    if (hasExtraFields) {
+    if (requestFields.length === 0 || hasExtraFields) {
       throw new Error("Bad Request");
     }
 

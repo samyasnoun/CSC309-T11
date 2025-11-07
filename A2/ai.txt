@@ -1,0 +1,11 @@
+I used AI (Claude/Cursor) to assist with this assignment in the following ways:
+
+1. Debugging and fixing test case failures
+2. Understanding Prisma query syntax and SQLite compatibility
+3. Implementing proper authentication middleware and route protection
+4. Fixing validation logic for user updates and transaction creation
+5. Resolving permission issues across controllers
+6. Code review and bug identification
+
+The AI helped identify issues, suggest fixes, and explain best practices, but I reviewed and understood all changes before applying them.
+

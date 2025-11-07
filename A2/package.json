@@ -5,7 +5,10 @@
   "main": "index.js",
   "scripts": {
     "createsuperuser": "node prisma/createsu.js",
-    "clean": "rm -rf prisma/dev.db* node_modules package-lock.json prisma/migrations/"
+    "clean": "rm -rf prisma/dev.db* node_modules package-lock.json prisma/migrations/",
+    "reset": "./scripts/reset.sh",
+    "test:api": "newman run postman/a2.postman_collection.json -e postman/a2.postman_environment.json --timeout-request 30000",
+    "dev": "node index.js 8000"
   },
   "author": "CSC309 Student, Winter 2025",
   "license": "ISC",

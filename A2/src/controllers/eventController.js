@@ -47,7 +47,9 @@ async function loadViewer(req) {
 
 function ensureCapacity(event) {
     if (event.capacity !== null && event._count.guests >= event.capacity) {
-        throw new Error("Bad Request");
+        const error = new Error("Gone");
+        error.statusCode = 410;
+        throw error;
     }
 }
 
@@ -158,23 +160,9 @@ const getEvents = async (req, res, next) => {
             }
             where = conditions.length ? { AND: conditions } : {};
         } else {
-            const clauses = [];
-
-            // Regular users always see published events
-            const publishedConditions = [...otherFilters, { published: true }];
-            clauses.push({ AND: publishedConditions });
-
-            // If user is logged in, also show unpublished events where they're organizers
-            if (viewer) {
-                const organizerConditions = [...otherFilters, { organizers: { some: { id: viewer.id } } }];
-                clauses.push({ AND: organizerConditions });
-            }
-
-            if (clauses.length === 0) {
-                where = { id: -1 };
-            } else {
-                where = { OR: clauses };
-            }
+            // Regular users ONLY see published events (no organizer visibility)
+            const conditions = [...otherFilters, { published: true }];
+            where = conditions.length > 1 ? { AND: conditions } : { published: true };
         }
 
         const [count, events] = await prisma.$transaction([
@@ -762,21 +750,24 @@ const createRewardTransaction = async (req, res, next) => {
             throw new Error("Forbidden");
         }
 
-        const lowerUtorids = utorids.map((u) => String(u).toLowerCase());
-
-        const guestsByUtorid = new Map(
-            event.guests.map((guest) => [guest.utorid.toLowerCase(), guest])
-        );
-
-        const guestsToReward = lowerUtorids.map((utorid) => {
-            const guest = guestsByUtorid.get(utorid);
-            if (!guest) {
-                const error = new Error("Bad Request");
-                error.details = "missing guest";
-                throw error;
-            }
-            return guest;
-        });
+        // If no utorids provided, award to ALL guests
+        const guestsToReward = utorids.length === 0
+            ? event.guests
+            : (() => {
+                const lowerUtorids = utorids.map((u) => String(u).toLowerCase());
+                const guestsByUtorid = new Map(
+                    event.guests.map((guest) => [guest.utorid.toLowerCase(), guest])
+                );
+                return lowerUtorids.map((utorid) => {
+                    const guest = guestsByUtorid.get(utorid);
+                    if (!guest) {
+                        const error = new Error("Bad Request");
+                        error.details = "missing guest";
+                        throw error;
+                    }
+                    return guest;
+                });
+            })();
 
         if (event.pointsRemain < amount * guestsToReward.length) {
             throw new Error("Bad Request");

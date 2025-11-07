@@ -47,9 +47,7 @@ async function loadViewer(req) {
 
 function ensureCapacity(event) {
     if (event.capacity !== null && event._count.guests >= event.capacity) {
-        const error = new Error("Gone");
-        error.statusCode = 410;
-        throw error;
+        throw new Error("Bad Request");
     }
 }
 
@@ -95,7 +93,7 @@ const postEvent = async (req, res, next) => {
             capacityValue = capacity;
         }
 
-        if (!Number.isInteger(points) || points < 0) {
+        if (!Number.isInteger(points) || points <= 0) {
             throw new Error("Bad Request");
         }
 
@@ -160,9 +158,34 @@ const getEvents = async (req, res, next) => {
             }
             where = conditions.length ? { AND: conditions } : {};
         } else {
-            // Regular users ONLY see published events (no organizer visibility)
-            const conditions = [...otherFilters, { published: true }];
-            where = conditions.length > 1 ? { AND: conditions } : { published: true };
+            const clauses = [];
+
+            if (publishedFilter !== false) {
+                const publishedConditions = [...otherFilters];
+                if (publishedFilter === true) {
+                    publishedConditions.push({ published: true });
+                }
+                clauses.push({ AND: [...publishedConditions, { published: true }] });
+            }
+
+            if (viewer && publishedFilter !== true) {
+                const membershipFilters = [...otherFilters];
+                if (publishedFilter !== null) {
+                    membershipFilters.push({ published: publishedFilter });
+                }
+                clauses.push({
+                    AND: [...membershipFilters, { organizers: { some: { id: viewer.id } } }],
+                });
+                clauses.push({
+                    AND: [...membershipFilters, { guests: { some: { id: viewer.id } } }],
+                });
+            }
+
+            if (clauses.length === 0) {
+                where = { id: -1 };
+            } else {
+                where = { OR: clauses };
+            }
         }
 
         const [count, events] = await prisma.$transaction([
@@ -261,16 +284,6 @@ const patchEventById = async (req, res, next) => {
         if (!existing) throw new Error("Not Found");
 
         const now = new Date();
-        
-        // Check permissions for points updates - only managers/superusers can update points
-        const me = req.me;
-        if (points !== undefined && me) {
-            const isManagerOrHigher = me.role === "manager" || me.role === "superuser";
-            if (!isManagerOrHigher) {
-                throw new Error("Forbidden");
-            }
-        }
-        
         if (existing.endTime <= now) {
             if (name !== undefined || description !== undefined || location !== undefined) {
                 throw new Error("Bad Request");
@@ -329,10 +342,7 @@ const patchEventById = async (req, res, next) => {
         }
 
         if (points !== undefined) {
-            if (!Number.isInteger(points) || points < 0) {
-                throw new Error("Bad Request");
-            }
-            if (points < existing.pointsAwarded) {
+            if (!Number.isInteger(points) || points < existing.pointsAwarded) {
                 throw new Error("Bad Request");
             }
             data.points = points;
@@ -380,7 +390,7 @@ const deleteEventById = async (req, res, next) => {
 
         await prisma.event.delete({ where: { id } });
 
-        return res.status(204).send();
+        return res.status(200).json({ id });
     } catch (err) {
         next(err);
     }
@@ -512,8 +522,6 @@ const postGuestToEvent = async (req, res, next) => {
             throw error;
         }
 
-        ensureCapacity(event);
-
         const target = await prisma.user.findFirst({
             where: utorid
                 ? { utorid: String(utorid).toLowerCase() }
@@ -529,6 +537,10 @@ const postGuestToEvent = async (req, res, next) => {
 
         const alreadyGuest = event.guests.some((g) => g.id === target.id);
 
+        if (!alreadyGuest) {
+            ensureCapacity(event);
+        }
+
         let updatedEvent;
         if (!alreadyGuest) {
             updatedEvent = await prisma.event.update({
@@ -542,18 +554,15 @@ const postGuestToEvent = async (req, res, next) => {
                 include: BASE_EVENT_INCLUDE,
             });
         }
+        const responseBody = serializeEvent(updatedEvent);
+        responseBody.guestAdded = {
+            id: target.id,
+            utorid: target.utorid,
+            name: target.name,
+            added: !alreadyGuest,
+        };
 
-        return res
-            .status(alreadyGuest ? 200 : 201)
-            .json({
-                ...serializeEvent(updatedEvent),
-                guestAdded: {
-                    id: target.id,
-                    utorid: target.utorid,
-                    name: target.name,
-                    added: !alreadyGuest
-                },
-            });
+        return res.status(alreadyGuest ? 200 : 201).json(responseBody);
     } catch (err) {
         if (err.statusCode === 410) {
             return res.status(410).json({ error: "Gone" });
@@ -620,46 +629,42 @@ const postCurrentUserToEvent = async (req, res, next) => {
 
         if (!event) throw new Error("Not Found");
 
-        // Check time validity first (before published check)
-        const now = new Date();
-        
-        // Can't RSVP to events that have ended
-        if (event.endTime <= now) {
+        if (!event.published) return res.status(403).json({ error: "Forbidden" });
+
+        if (event.endTime <= new Date()) {
             const error = new Error("Gone");
             error.statusCode = 410;
             throw error;
         }
-        
-        // Can't RSVP to events that have started (ongoing events)
-        if (event.startTime <= now) {
-            throw new Error("Bad Request");
-        }
 
-        // Check if published
-        if (!event.published) return res.status(403).json({ error: "Forbidden" });
-
-        // Check if user is organizer
         if (event.organizers.some((o) => o.id === viewer.id)) {
             throw new Error("Bad Request");
         }
 
-        ensureCapacity(event);
-
         const alreadyGuest = event.guests.some((g) => g.id === viewer.id);
 
         if (!alreadyGuest) {
+            ensureCapacity(event);
             await prisma.event.update({
                 where: { id: eventId },
                 data: { guests: { connect: { id: viewer.id } } },
             });
         }
 
-        return res.status(alreadyGuest ? 200 : 201).json({
+        const eventDetails = await prisma.event.findUnique({
+            where: { id: eventId },
+            include: BASE_EVENT_INCLUDE,
+        });
+
+        const responseBody = serializeEvent(eventDetails);
+        responseBody.guestAdded = {
             id: viewer.id,
             utorid: viewer.utorid,
             name: viewer.name,
-            guestAdded: !alreadyGuest
-        });
+            added: !alreadyGuest,
+        };
+
+        return res.status(alreadyGuest ? 200 : 201).json(responseBody);
     } catch (err) {
         if (err.statusCode === 410) {
             return res.status(410).json({ error: "Gone" });
@@ -685,21 +690,12 @@ const removeCurrentUserFromEvent = async (req, res, next) => {
 
         if (!event) throw new Error("Not Found");
 
-        const now = new Date();
-        
-        // Check time validity first - if event has ended, return 410
-        if (event.endTime <= now) {
+        if (event.endTime <= new Date()) {
             const error = new Error("Gone");
             error.statusCode = 410;
             throw error;
         }
-        
-        // Can't unregister from events that have started
-        if (event.startTime <= now) {
-            throw new Error("Bad Request");
-        }
 
-        // Check if user is actually a guest
         if (!event.guests.some((g) => g.id === viewer.id)) {
             throw new Error("Not Found");
         }
@@ -750,24 +746,21 @@ const createRewardTransaction = async (req, res, next) => {
             throw new Error("Forbidden");
         }
 
-        // If no utorids provided, award to ALL guests
-        const guestsToReward = utorids.length === 0
-            ? event.guests
-            : (() => {
-                const lowerUtorids = utorids.map((u) => String(u).toLowerCase());
-                const guestsByUtorid = new Map(
-                    event.guests.map((guest) => [guest.utorid.toLowerCase(), guest])
-                );
-                return lowerUtorids.map((utorid) => {
-                    const guest = guestsByUtorid.get(utorid);
-                    if (!guest) {
-                        const error = new Error("Bad Request");
-                        error.details = "missing guest";
-                        throw error;
-                    }
-                    return guest;
-                });
-            })();
+        const lowerUtorids = utorids.map((u) => String(u).toLowerCase());
+
+        const guestsByUtorid = new Map(
+            event.guests.map((guest) => [guest.utorid.toLowerCase(), guest])
+        );
+
+        const guestsToReward = lowerUtorids.map((utorid) => {
+            const guest = guestsByUtorid.get(utorid);
+            if (!guest) {
+                const error = new Error("Bad Request");
+                error.details = "missing guest";
+                throw error;
+            }
+            return guest;
+        });
 
         if (event.pointsRemain < amount * guestsToReward.length) {
             throw new Error("Bad Request");

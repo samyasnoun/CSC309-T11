@@ -13,19 +13,6 @@ function generateToken(user) {
   return { token, expiresAt };
 }
 
-function verifyToken(token) {
-  return new Promise((resolve, reject) => {
-    jwt.verify(token, process.env.JWT_SECRET || "secretkey", (err, decoded) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(decoded);
-      }
-    });
-  });
-}
-
 module.exports = {
   generateToken,
-  verifyToken,
 };

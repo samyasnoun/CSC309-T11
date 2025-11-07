@@ -1,6 +1,37 @@
 const prisma = require("../prismaClient");
 
-const VALID_TYPES = ["automatic", "one-time"];
+function normalizeType(value) {
+  if (typeof value !== "string") return null;
+
+  const lowered = value.trim().toLowerCase();
+  if (!lowered) return null;
+
+  if (lowered === "automatic" || lowered === "auto") return "automatic";
+
+  const normalized = lowered.replace(/[-\s]+/g, "_");
+  if (normalized === "one_time" || normalized === "onetime") return "one_time";
+
+  return null;
+}
+
+function toResponseType(dbValue) {
+  return dbValue === "one_time" ? "one_time" : dbValue;
+}
+
+function coerceNumber(value) {
+  if (typeof value === "number") return value;
+  if (typeof value === "string" && value.trim() !== "") {
+    return Number(value);
+  }
+  return NaN;
+}
+
+function isNullLike(value) {
+  return (
+    value === null ||
+    (typeof value === "string" && value.trim().toLowerCase() === "null")
+  );
+}
 
 async function loadViewer(req) {
   if (!req.auth || typeof req.auth.userId !== "number") return null;
@@ -12,7 +43,7 @@ function serializePromotion(promotion) {
     id: promotion.id,
     name: promotion.name,
     description: promotion.description,
-    type: promotion.type === "one_time" ? "one-time" : promotion.type,
+    type: toResponseType(promotion.type),
     startTime: promotion.startTime,
     endTime: promotion.endTime,
     rate: promotion.rate,
@@ -38,11 +69,12 @@ const postPromotion = async (req, res, next) => {
       throw new Error("Bad Request");
     }
 
-    if (typeof name !== "string" || !name.trim() || name.length > 120) throw new Error("Bad Request");
-    if (typeof description !== "string" || !description.trim() || description.length > 1000)
+    if (typeof name !== "string" || name.length > 120) throw new Error("Bad Request");
+    if (typeof description !== "string" || description.length > 1000)
       throw new Error("Bad Request");
 
-    if (!VALID_TYPES.includes(type)) {
+    const normalizedType = normalizeType(type);
+    if (!normalizedType) {
       throw new Error("Bad Request");
     }
 
@@ -52,7 +84,7 @@ const postPromotion = async (req, res, next) => {
       throw new Error("Bad Request");
     }
 
-    const dbType = type === "one-time" ? "one_time" : type;
+    const dbType = normalizedType;
 
     const data = {
       name,
@@ -63,30 +95,42 @@ const postPromotion = async (req, res, next) => {
     };
 
     if (minSpending !== undefined) {
-      const spending = Number(minSpending);
-      if (!Number.isFinite(spending) || spending < 0) throw new Error("Bad Request");
-      data.minSpending = spending;
+      if (isNullLike(minSpending)) {
+        data.minSpending = null;
+      } else {
+        const spending = coerceNumber(minSpending);
+        if (!Number.isFinite(spending) || spending < 0) throw new Error("Bad Request");
+        data.minSpending = spending;
+      }
     }
 
-    if (type === "automatic") {
-      const rateVal = Number(rate);
+    if (normalizedType === "automatic") {
+      const rateVal = coerceNumber(rate);
       if (!Number.isFinite(rateVal) || rateVal <= 0) throw new Error("Bad Request");
       data.rate = rateVal;
       if (points !== undefined) {
-        const pts = Number(points);
-        if (!Number.isInteger(pts) || pts < 0) throw new Error("Bad Request");
-        data.points = pts;
+        if (isNullLike(points)) {
+          data.points = null;
+        } else {
+          const pts = coerceNumber(points);
+          if (!Number.isInteger(pts) || pts < 0) throw new Error("Bad Request");
+          data.points = pts;
+        }
       }
-    } else if (type === "one-time") {
-      const ptsVal = Number(points);
+    } else if (normalizedType === "one_time") {
+      const ptsVal = coerceNumber(points);
       if (!Number.isInteger(ptsVal) || ptsVal <= 0) {
         throw new Error("Bad Request");
       }
       data.points = ptsVal;
       if (rate !== undefined) {
-        const rateVal = Number(rate);
-        if (!Number.isFinite(rateVal) || rateVal <= 0) throw new Error("Bad Request");
-        data.rate = rateVal;
+        if (isNullLike(rate)) {
+          data.rate = null;
+        } else {
+          const rateVal = coerceNumber(rate);
+          if (!Number.isFinite(rateVal) || rateVal <= 0) throw new Error("Bad Request");
+          data.rate = rateVal;
+        }
       }
     }
 
@@ -116,9 +160,9 @@ const getPromotions = async (req, res, next) => {
     const filters = [];
 
     if (type !== undefined) {
-      if (!VALID_TYPES.includes(String(type))) throw new Error("Bad Request");
-      const dbType = String(type) === "one-time" ? "one_time" : String(type);
-      filters.push({ type: dbType });
+      const normalizedType = normalizeType(String(type));
+      if (!normalizedType) throw new Error("Bad Request");
+      filters.push({ type: normalizedType });
     }
 
     if (started !== undefined && ended !== undefined) {
@@ -136,15 +180,23 @@ const getPromotions = async (req, res, next) => {
     } else {
       // Managers and superusers can use started/ended filters
       if (started !== undefined) {
-        if (started === "true") filters.push({ startTime: { lte: now } });
-        else if (started === "false") filters.push({ startTime: { gt: now } });
-        else throw new Error("Bad Request");
+        if (started === "true" || started === "1" || started === 1) {
+          filters.push({ startTime: { lte: now } });
+        } else if (started === "false" || started === "0" || started === 0) {
+          filters.push({ startTime: { gt: now } });
+        } else {
+          throw new Error("Bad Request");
+        }
       }
 
       if (ended !== undefined) {
-        if (ended === "true") filters.push({ endTime: { lt: now } });
-        else if (ended === "false") filters.push({ endTime: { gte: now } });
-        else throw new Error("Bad Request");
+        if (ended === "true" || ended === "1" || ended === 1) {
+          filters.push({ endTime: { lt: now } });
+        } else if (ended === "false" || ended === "0" || ended === 0) {
+          filters.push({ endTime: { gte: now } });
+        } else {
+          throw new Error("Bad Request");
+        }
       }
     }
 
@@ -154,7 +206,7 @@ const getPromotions = async (req, res, next) => {
       prisma.promotion.count({ where }),
       prisma.promotion.findMany({
         where,
-        orderBy: { id: "asc" },
+        orderBy: { startTime: "asc" },
         skip: (pageNum - 1) * limitNum,
         take: limitNum,
       }),
@@ -169,7 +221,7 @@ const getPromotions = async (req, res, next) => {
 const getPromotionById = async (req, res, next) => {
   try {
     const id = Number(req.params.promotionId);
-    if (!Number.isInteger(id) || id <= 0) throw new Error("Bad Request");
+    if (!Number.isInteger(id) || id <= 0) throw new Error("Not Found");
 
     const promotion = await prisma.promotion.findUnique({ where: { id } });
     if (!promotion) throw new Error("Not Found");
@@ -194,7 +246,7 @@ const getPromotionById = async (req, res, next) => {
 const patchPromotionById = async (req, res, next) => {
   try {
     const id = Number(req.params.promotionId);
-    if (!Number.isInteger(id) || id <= 0) throw new Error("Bad Request");
+    if (!Number.isInteger(id) || id <= 0) throw new Error("Not Found");
 
     const promotion = await prisma.promotion.findUnique({ where: { id } });
     if (!promotion) throw new Error("Not Found");
@@ -218,9 +270,6 @@ const patchPromotionById = async (req, res, next) => {
 
     if (promotion.startTime <= now) {
       if (startTime !== undefined) throw new Error("Bad Request");
-      if (rate !== undefined || points !== undefined || minSpending !== undefined) {
-        throw new Error("Bad Request");
-      }
     }
 
     const data = {};
@@ -256,22 +305,30 @@ const patchPromotionById = async (req, res, next) => {
     }
 
     if (rate !== undefined) {
-      const rateVal = Number(rate);
-      if (!Number.isFinite(rateVal) || rateVal <= 0) throw new Error("Bad Request");
-      data.rate = rateVal;
+      if (isNullLike(rate)) {
+        data.rate = null;
+      } else {
+        const rateVal = coerceNumber(rate);
+        if (!Number.isFinite(rateVal) || rateVal <= 0) throw new Error("Bad Request");
+        data.rate = rateVal;
+      }
     }
 
     if (points !== undefined) {
-      const pts = Number(points);
-      if (!Number.isInteger(pts) || pts < 0) throw new Error("Bad Request");
-      data.points = pts;
+      if (isNullLike(points)) {
+        data.points = null;
+      } else {
+        const pts = coerceNumber(points);
+        if (!Number.isInteger(pts) || pts < 0) throw new Error("Bad Request");
+        data.points = pts;
+      }
     }
 
     if (minSpending !== undefined) {
-      if (minSpending === null) {
+      if (isNullLike(minSpending)) {
         data.minSpending = null;
       } else {
-        const spend = Number(minSpending);
+        const spend = coerceNumber(minSpending);
         if (!Number.isFinite(spend) || spend < 0) throw new Error("Bad Request");
         data.minSpending = spend;
       }
@@ -288,7 +345,7 @@ const patchPromotionById = async (req, res, next) => {
 const deletePromotionById = async (req, res, next) => {
   try {
     const id = Number(req.params.promotionId);
-    if (!Number.isInteger(id) || id <= 0) throw new Error("Bad Request");
+    if (!Number.isInteger(id) || id <= 0) throw new Error("Not Found");
 
     const promotion = await prisma.promotion.findUnique({ where: { id } });
     if (!promotion) throw new Error("Not Found");

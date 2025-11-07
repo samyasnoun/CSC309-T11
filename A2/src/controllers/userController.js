@@ -500,7 +500,12 @@ const patchCurrentUser = async (req, res, next) => {
       },
     });
 
-    return res.status(200).json(updated);
+    const responseBody = {
+      ...updated,
+      birthday: updated.birthday ? updated.birthday.toISOString().slice(0, 10) : null,
+    };
+
+    return res.status(200).json(responseBody);
   } catch (err) {
     next(err);
   }
@@ -601,32 +606,20 @@ const postRedemptionTransaction = async (req, res, next) => {
   }
 };
 
-const buildTransactionResponse = (record) => {
-  const response = {
-    id: record.id,
-    type: record.type,
-    amount: record.amount,
-    spent: record.spent ?? null,
-    redeemed: record.redeemed ?? null,
-    suspicious: record.suspicious,
-    remark: record.remark || "",
-    createdAt: record.createdAt,
-    promotionIds: record.promotions?.map((p) => p.id) ?? [],
-    createdBy: record.createdBy ? record.createdBy.utorid : null,
-  };
-  
-  // Always include relatedId for adjustment/transfer transactions
-  if (record.type === "adjustment" || record.type === "transfer") {
-    response.relatedId = record.relatedId;
-  }
-  
-  // Include eventId for event transactions
-  if (record.eventId !== null && record.eventId !== undefined) {
-    response.eventId = record.eventId;
-  }
-  
-  return response;
-};
+const buildTransactionResponse = (record) => ({
+  id: record.id,
+  type: record.type,
+  amount: record.amount,
+  spent: record.spent ?? null,
+  redeemed: record.redeemed ?? null,
+  suspicious: record.suspicious,
+  remark: record.remark || "",
+  createdAt: record.createdAt,
+  relatedId: record.relatedId ?? undefined,
+  promotionIds: record.promotions?.map((p) => p.id) ?? [],
+  createdBy: record.createdBy ? record.createdBy.utorid : null,
+  eventId: record.eventId ?? undefined,
+});
 
 const getCurrentUserTransactions = async (req, res, next) => {
   try {

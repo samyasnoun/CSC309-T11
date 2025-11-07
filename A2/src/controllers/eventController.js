@@ -56,12 +56,12 @@ const postEvent = async (req, res, next) => {
         const { name, description, location, startTime, endTime, capacity, points } =
             req.body ?? {};
 
-        if (name === undefined || description === undefined || location === undefined || startTime === undefined || endTime === undefined || points === undefined) {
-            throw new Error("Bad Request");
-        }
-
         if (!req.me) {
             return res.status(403).json({ error: "Forbidden" });
+        }
+
+        if (name === undefined || description === undefined || location === undefined || startTime === undefined || endTime === undefined || points === undefined) {
+            throw new Error("Bad Request");
         }
 
         if (

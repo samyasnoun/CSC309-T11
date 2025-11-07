@@ -20,7 +20,7 @@ function NewTodo({ onAddTodo }) {
     };
 
     return (
-        <form className="new-todo row" onSubmit={handleSubmit}>
+        <form className='new-todo row' onSubmit={handleSubmit}>
             <input
                 type="text"
                 placeholder="Enter a new task"

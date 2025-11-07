@@ -42,10 +42,10 @@ function App() {
     };
 
     return (
-        <div className="app">
+        <div className='app'>
             <h1>My ToDos</h1>
             <NewTodo onAddTodo={handleAddTodo} />
-            <ul className="todo-list">
+            <ul className='todo-list'>
                 {todos.map((todo) => (
                     <li key={todo.id}>
                         <TodoItem

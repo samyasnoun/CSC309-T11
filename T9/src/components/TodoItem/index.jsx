@@ -20,7 +20,7 @@ function TodoItem({ todo, onDelete, onToggle }) {
     };
 
     return (
-        <div className="todo-item row">
+        <div className='todo-item row'>
             <input
                 type="checkbox"
                 checked={todo.completed}

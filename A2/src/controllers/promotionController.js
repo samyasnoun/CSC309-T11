@@ -81,8 +81,8 @@ const postPromotion = async (req, res, next) => {
       throw new Error("Bad Request");
     }
 
-    if (typeof name !== "string" || !name.trim() || name.length > 120) throw new Error("Bad Request");
-    if (typeof description !== "string" || !description.trim() || description.length > 1000)
+    if (typeof name !== "string" || name.length > 120) throw new Error("Bad Request");
+    if (typeof description !== "string" || description.length > 1000)
       throw new Error("Bad Request");
 
     const normalizedType = normalizeType(type);
@@ -233,7 +233,7 @@ const getPromotions = async (req, res, next) => {
       prisma.promotion.count({ where }),
       prisma.promotion.findMany({
         where,
-        orderBy: { id: "asc" },
+        orderBy: { startTime: "asc" },
         skip: (pageNum - 1) * limitNum,
         take: limitNum,
       }),

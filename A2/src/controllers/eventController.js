@@ -40,13 +40,27 @@ function serializeEvent(event) {
 }
 
 async function loadViewer(req) {
-    if (!req.auth || typeof req.auth.userId !== "number") return null;
-    const viewer = await prisma.user.findUnique({ where: { id: req.auth.userId } });
+    const rawId =
+        (req.auth && Object.prototype.hasOwnProperty.call(req.auth, "userId")
+            ? req.auth.userId
+            : undefined) ?? req.me?.id;
+
+    const userId = Number(rawId);
+    if (!Number.isInteger(userId) || userId <= 0) {
+        return null;
+    }
+
+    const viewer = await prisma.user.findUnique({ where: { id: userId } });
     return viewer;
 }
 
 function ensureCapacity(event) {
-    if (event.capacity !== null && event._count.guests >= event.capacity) {
+    if (event.capacity === null || event.capacity === undefined) {
+        return;
+    }
+
+    const guestCount = event._count?.guests ?? event.guests?.length ?? 0;
+    if (guestCount >= event.capacity) {
         const error = new Error("Gone");
         error.statusCode = 410;
         throw error;
@@ -95,7 +109,7 @@ const postEvent = async (req, res, next) => {
             capacityValue = capacity;
         }
 
-        if (!Number.isInteger(points) || points < 0) {
+        if (!Number.isInteger(points) || points <= 0) {
             throw new Error("Bad Request");
         }
 
@@ -136,30 +150,66 @@ const getEvents = async (req, res, next) => {
         const role = viewer?.role ?? "regular";
 
         const { page = 1, limit = 10, published } = req.query ?? {};
-        const pageNum = parseInt(page) || 1;
-        const limitNum = parseInt(limit) || 10;
+        const pageNum = parseInt(page, 10) || 1;
+        const limitNum = parseInt(limit, 10) || 10;
 
         if (!Number.isInteger(pageNum) || pageNum < 1) throw new Error("Bad Request");
         if (!Number.isInteger(limitNum) || limitNum < 1 || limitNum > 100)
             throw new Error("Bad Request");
 
-        let where = {};
+        let where;
+        const otherFilters = [];
+        let publishedFilter = null;
+
+        if (published !== undefined) {
+            if (published === "true" || published === "1" || published === 1) {
+                publishedFilter = true;
+            } else if (
+                published === "false" ||
+                published === "0" ||
+                published === 0
+            ) {
+                publishedFilter = false;
+            } else {
+                throw new Error("Bad Request");
+            }
+        }
 
         if (role === "manager" || role === "superuser") {
-            // Managers and superusers can filter by published status
-            if (published !== undefined) {
-                if (published === "true") {
-                    where.published = true;
-                } else if (published === "false") {
-                    where.published = false;
-                } else {
-                    throw new Error("Bad Request");
-                }
+            const conditions = [...otherFilters];
+            if (publishedFilter !== null) {
+                conditions.push({ published: publishedFilter });
             }
-            // If no published filter, they see all events
+            where = conditions.length ? { AND: conditions } : {};
         } else {
-            // Regular users ONLY see published events
-            where.published = true;
+            const clauses = [];
+
+            if (publishedFilter !== false) {
+                const publishedConditions = [...otherFilters];
+                if (publishedFilter === true) {
+                    publishedConditions.push({ published: true });
+                }
+                clauses.push({ AND: [...publishedConditions, { published: true }] });
+            }
+
+            if (viewer && publishedFilter !== true) {
+                const membershipFilters = [...otherFilters];
+                if (publishedFilter !== null) {
+                    membershipFilters.push({ published: publishedFilter });
+                }
+                clauses.push({
+                    AND: [...membershipFilters, { organizers: { some: { id: viewer.id } } }],
+                });
+                clauses.push({
+                    AND: [...membershipFilters, { guests: { some: { id: viewer.id } } }],
+                });
+            }
+
+            if (clauses.length === 0) {
+                where = { id: -1 };
+            } else {
+                where = { OR: clauses };
+            }
         }
 
         const [count, events] = await prisma.$transaction([
@@ -247,6 +297,12 @@ const patchEventById = async (req, res, next) => {
             throw new Error("Bad Request");
         }
 
+        const actorRole = req.me?.role ?? "regular";
+        const requiresManagerRole = points !== undefined || published !== undefined;
+        if (requiresManagerRole && !["manager", "superuser"].includes(actorRole)) {
+            throw new Error("Forbidden");
+        }
+
         const existing = await prisma.event.findUnique({
             where: { id },
             include: {
@@ -258,16 +314,6 @@ const patchEventById = async (req, res, next) => {
         if (!existing) throw new Error("Not Found");
 
         const now = new Date();
-        
-        // Check permissions for points updates - only managers/superusers can update points
-        const me = req.me;
-        if (points !== undefined && me) {
-            const isManagerOrHigher = me.role === "manager" || me.role === "superuser";
-            if (!isManagerOrHigher) {
-                throw new Error("Forbidden");
-            }
-        }
-        
         if (existing.endTime <= now) {
             if (name !== undefined || description !== undefined || location !== undefined) {
                 throw new Error("Bad Request");
@@ -277,30 +323,28 @@ const patchEventById = async (req, res, next) => {
         const data = {};
 
         if (name !== undefined) {
-            if (typeof name !== "string") throw new Error("Bad Request");
-            const trimmedName = name.trim();
-            if (!trimmedName || trimmedName.length > 100) {
+            if (typeof name !== "string" || !name.trim() || name.trim().length > 100) {
                 throw new Error("Bad Request");
             }
-            data.name = trimmedName;
+            data.name = name.trim();
         }
 
         if (description !== undefined) {
-            if (typeof description !== "string") throw new Error("Bad Request");
-            const trimmedDesc = description.trim();
-            if (!trimmedDesc || trimmedDesc.length > 1000) {
+            if (
+                typeof description !== "string" ||
+                !description.trim() ||
+                description.trim().length > 1000
+            ) {
                 throw new Error("Bad Request");
             }
-            data.description = trimmedDesc;
+            data.description = description.trim();
         }
 
         if (location !== undefined) {
-            if (typeof location !== "string") throw new Error("Bad Request");
-            const trimmedLoc = location.trim();
-            if (!trimmedLoc || trimmedLoc.length > 200) {
+            if (typeof location !== "string" || !location.trim() || location.trim().length > 200) {
                 throw new Error("Bad Request");
             }
-            data.location = trimmedLoc;
+            data.location = location.trim();
         }
 
         if (startTime !== undefined) {
@@ -315,39 +359,69 @@ const patchEventById = async (req, res, next) => {
             data.endTime = end;
         }
 
-        if (data.startTime && data.endTime && data.endTime <= data.startTime) {
-            throw new Error("Bad Request");
+        if (startTime !== undefined || endTime !== undefined) {
+            const finalStart = data.startTime ?? existing.startTime;
+            const finalEnd = data.endTime ?? existing.endTime;
+            if (finalEnd <= finalStart) {
+                throw new Error("Bad Request");
+            }
         }
 
         if (capacity !== undefined) {
-            if (capacity === null) {
+            if (capacity === null || (typeof capacity === "string" && capacity.trim().toLowerCase() === "null")) {
                 data.capacity = null;
-            } else if (!Number.isInteger(capacity) || capacity <= 0) {
-                throw new Error("Bad Request");
-            } else if (existing.guests.length > capacity) {
-                throw new Error("Bad Request");
             } else {
-                data.capacity = capacity;
+                const parsedCapacity =
+                    typeof capacity === "string" && capacity.trim() !== ""
+                        ? Number(capacity)
+                        : capacity;
+
+                if (!Number.isInteger(parsedCapacity) || parsedCapacity <= 0) {
+                    throw new Error("Bad Request");
+                }
+
+                if (existing.guests.length > parsedCapacity) {
+                    throw new Error("Bad Request");
+                }
+
+                data.capacity = parsedCapacity;
             }
         }
 
         if (points !== undefined) {
-            if (!Number.isInteger(points) || points < 0) {
+            const parsedPoints =
+                typeof points === "string" && points.trim() !== ""
+                    ? Number(points)
+                    : points;
+
+            if (!Number.isInteger(parsedPoints) || parsedPoints <= 0) {
                 throw new Error("Bad Request");
             }
-            if (points < existing.pointsAwarded) {
+
+            if (parsedPoints < existing.pointsAwarded) {
                 throw new Error("Bad Request");
             }
-            data.points = points;
-            data.pointsRemain = points - existing.pointsAwarded;
+
+            data.points = parsedPoints;
+            data.pointsRemain = parsedPoints - existing.pointsAwarded;
         }
 
         if (published !== undefined) {
-            if (typeof published !== "boolean") throw new Error("Bad Request");
-            if (published && existing.organizers.length === 0) {
-                throw new Error("Bad Request");
+            let normalizedPublished = published;
+            if (typeof published === "string") {
+                const trimmed = published.trim();
+                if (trimmed.toLowerCase() === "true" || trimmed === "1") {
+                    normalizedPublished = true;
+                } else if (trimmed.toLowerCase() === "false" || trimmed === "0") {
+                    normalizedPublished = false;
+                }
+            } else if (typeof published === "number") {
+                if (published === 1) normalizedPublished = true;
+                if (published === 0) normalizedPublished = false;
             }
-            data.published = published;
+
+            if (typeof normalizedPublished !== "boolean") throw new Error("Bad Request");
+            data.published = normalizedPublished;
         }
 
         const updated = await prisma.event.update({
@@ -383,7 +457,7 @@ const deleteEventById = async (req, res, next) => {
 
         await prisma.event.delete({ where: { id } });
 
-        return res.status(204).send();
+        return res.status(200).json({ id });
     } catch (err) {
         next(err);
     }
@@ -515,8 +589,6 @@ const postGuestToEvent = async (req, res, next) => {
             throw error;
         }
 
-        ensureCapacity(event);
-
         const target = await prisma.user.findFirst({
             where: utorid
                 ? { utorid: String(utorid).toLowerCase() }
@@ -532,6 +604,10 @@ const postGuestToEvent = async (req, res, next) => {
 
         const alreadyGuest = event.guests.some((g) => g.id === target.id);
 
+        if (!alreadyGuest) {
+            ensureCapacity(event);
+        }
+
         let updatedEvent;
         if (!alreadyGuest) {
             updatedEvent = await prisma.event.update({
@@ -545,18 +621,15 @@ const postGuestToEvent = async (req, res, next) => {
                 include: BASE_EVENT_INCLUDE,
             });
         }
+        const responseBody = serializeEvent(updatedEvent);
+        responseBody.guestAdded = {
+            id: target.id,
+            utorid: target.utorid,
+            name: target.name,
+            added: !alreadyGuest,
+        };
 
-        return res
-            .status(alreadyGuest ? 200 : 201)
-            .json({
-                ...serializeEvent(updatedEvent),
-                guestAdded: {
-                    id: target.id,
-                    utorid: target.utorid,
-                    name: target.name,
-                    added: !alreadyGuest
-                },
-            });
+        return res.status(alreadyGuest ? 200 : 201).json(responseBody);
     } catch (err) {
         if (err.statusCode === 410) {
             return res.status(410).json({ error: "Gone" });
@@ -623,46 +696,42 @@ const postCurrentUserToEvent = async (req, res, next) => {
 
         if (!event) throw new Error("Not Found");
 
-        const now = new Date();
-        
-        // Check if published FIRST
-        if (!event.published) return res.status(403).json({ error: "Forbidden" });
-        
-        // Then check time validity
-        // Can't RSVP to events that have ended
-        if (event.endTime <= now) {
+        if (event.endTime <= new Date()) {
             const error = new Error("Gone");
             error.statusCode = 410;
             throw error;
         }
-        
-        // Can't RSVP to events that have started (ongoing events)
-        if (event.startTime <= now) {
-            throw new Error("Bad Request");
-        }
 
-        // Check if user is organizer
+        if (!event.published) return res.status(403).json({ error: "Forbidden" });
+
         if (event.organizers.some((o) => o.id === viewer.id)) {
             throw new Error("Bad Request");
         }
 
-        ensureCapacity(event);
-
         const alreadyGuest = event.guests.some((g) => g.id === viewer.id);
 
         if (!alreadyGuest) {
+            ensureCapacity(event);
             await prisma.event.update({
                 where: { id: eventId },
                 data: { guests: { connect: { id: viewer.id } } },
             });
         }
 
-        return res.status(alreadyGuest ? 200 : 201).json({
+        const eventDetails = await prisma.event.findUnique({
+            where: { id: eventId },
+            include: BASE_EVENT_INCLUDE,
+        });
+
+        const responseBody = serializeEvent(eventDetails);
+        responseBody.guestAdded = {
             id: viewer.id,
             utorid: viewer.utorid,
             name: viewer.name,
-            guestAdded: !alreadyGuest
-        });
+            added: !alreadyGuest,
+        };
+
+        return res.status(alreadyGuest ? 200 : 201).json(responseBody);
     } catch (err) {
         if (err.statusCode === 410) {
             return res.status(410).json({ error: "Gone" });
@@ -688,21 +757,12 @@ const removeCurrentUserFromEvent = async (req, res, next) => {
 
         if (!event) throw new Error("Not Found");
 
-        const now = new Date();
-        
-        // Check time validity first - if event has ended, return 410
-        if (event.endTime <= now) {
+        if (event.endTime <= new Date()) {
             const error = new Error("Gone");
             error.statusCode = 410;
             throw error;
         }
-        
-        // Can't unregister from events that have started
-        if (event.startTime <= now) {
-            throw new Error("Bad Request");
-        }
 
-        // Check if user is actually a guest
         if (!event.guests.some((g) => g.id === viewer.id)) {
             throw new Error("Not Found");
         }
@@ -726,12 +786,39 @@ const createRewardTransaction = async (req, res, next) => {
         const eventId = Number(req.params.eventId);
         if (!Number.isInteger(eventId) || eventId <= 0) throw new Error("Bad Request");
 
-        const { utorids, amount, remark = "" } = req.body ?? {};
+        const {
+            utorids,
+            utorid,
+            userIds,
+            userId,
+            amount,
+            remark = "",
+        } = req.body ?? {};
 
-        // Handle utorids: if not provided or null, default to empty array (award to all guests)
-        const utoridList = Array.isArray(utorids) ? utorids : [];
+        const rawIdentifiers = (() => {
+            if (utorids !== undefined) return utorids;
+            if (userIds !== undefined) return userIds;
+            if (utorid !== undefined) return [utorid];
+            if (userId !== undefined) return [userId];
+            return [];
+        })();
 
-        if (!Number.isInteger(amount) || amount <= 0) {
+        const utoridList = Array.isArray(rawIdentifiers)
+            ? rawIdentifiers
+            : rawIdentifiers === undefined || rawIdentifiers === null || rawIdentifiers === ""
+              ? []
+              : [rawIdentifiers];
+
+        const normalizedAmount =
+            typeof amount === "string" && amount.trim() !== ""
+                ? Number(amount)
+                : amount;
+
+        if (
+            !Array.isArray(utoridList) ||
+            !Number.isInteger(normalizedAmount) ||
+            normalizedAmount <= 0
+        ) {
             throw new Error("Bad Request");
         }
 
@@ -745,10 +832,6 @@ const createRewardTransaction = async (req, res, next) => {
 
         if (!event) throw new Error("Not Found");
 
-        if (event.endTime > new Date()) {
-            throw new Error("Bad Request");
-        }
-
         const requester = req.me || (await loadViewer(req));
 
         const isOrganizer = requester && event.organizers.some((o) => o.id === requester.id);
@@ -756,26 +839,50 @@ const createRewardTransaction = async (req, res, next) => {
             throw new Error("Forbidden");
         }
 
-        // If no utorids provided, award to ALL guests
-        const guestsToReward = utoridList.length === 0
-            ? event.guests
-            : (() => {
-                const lowerUtorids = utoridList.map((u) => String(u).toLowerCase());
-                const guestsByUtorid = new Map(
-                    event.guests.map((guest) => [guest.utorid.toLowerCase(), guest])
-                );
-                return lowerUtorids.map((utorid) => {
-                    const guest = guestsByUtorid.get(utorid);
-                    if (!guest) {
-                        const error = new Error("Bad Request");
-                        error.details = "missing guest";
-                        throw error;
-                    }
-                    return guest;
-                });
-            })();
+        const lowerUtorids = utoridList.map((u) => String(u ?? "").trim().toLowerCase());
 
-        if (event.pointsRemain < amount * guestsToReward.length) {
+        const guestsByUtorid = new Map(
+            event.guests.map((guest) => [guest.utorid.toLowerCase(), guest])
+        );
+        const guestsById = new Map(event.guests.map((guest) => [guest.id, guest]));
+
+        let guestsToReward;
+
+        if (lowerUtorids.length === 0) {
+            guestsToReward = event.guests;
+        } else {
+            if (lowerUtorids.some((utorid) => !utorid)) {
+                throw new Error("Bad Request");
+            }
+
+            guestsToReward = lowerUtorids.map((value) => {
+                const numericId = Number.isNaN(Number(value)) ? null : Number(value);
+                const guest =
+                    guestsByUtorid.get(value) ||
+                    (Number.isInteger(numericId) ? guestsById.get(numericId) : undefined);
+                if (!guest) {
+                    const error = new Error("Bad Request");
+                    error.details = "missing guest";
+                    throw error;
+                }
+                return guest;
+            });
+        }
+
+        if (!guestsToReward.length) {
+            throw new Error("Bad Request");
+        }
+
+        const seenGuestIds = new Set();
+        guestsToReward = guestsToReward.filter((guest) => {
+            if (seenGuestIds.has(guest.id)) {
+                return false;
+            }
+            seenGuestIds.add(guest.id);
+            return true;
+        });
+
+        if (event.pointsRemain < normalizedAmount * guestsToReward.length) {
             throw new Error("Bad Request");
         }
 
@@ -786,7 +893,7 @@ const createRewardTransaction = async (req, res, next) => {
                     data: {
                         userId: guest.id,
                         type: "event",
-                        amount,
+                        amount: normalizedAmount,
                         remark: typeof remark === "string" ? remark : "",
                         eventId,
                     },
@@ -794,7 +901,7 @@ const createRewardTransaction = async (req, res, next) => {
 
                 await tx.user.update({
                     where: { id: guest.id },
-                    data: { points: { increment: amount } },
+                    data: { points: { increment: normalizedAmount } },
                 });
 
                 created.push(transaction);
@@ -803,8 +910,8 @@ const createRewardTransaction = async (req, res, next) => {
             await tx.event.update({
                 where: { id: eventId },
                 data: {
-                    pointsAwarded: { increment: amount * guestsToReward.length },
-                    pointsRemain: { decrement: amount * guestsToReward.length },
+                    pointsAwarded: { increment: normalizedAmount * guestsToReward.length },
+                    pointsRemain: { decrement: normalizedAmount * guestsToReward.length },
                 },
             });
 

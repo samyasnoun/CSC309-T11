@@ -300,19 +300,6 @@ const patchEventById = async (req, res, next) => {
             published,
         } = req.body ?? {};
 
-        if (
-            name === undefined &&
-            description === undefined &&
-            location === undefined &&
-            startTime === undefined &&
-            endTime === undefined &&
-            capacity === undefined &&
-            points === undefined &&
-            published === undefined
-        ) {
-            throw new Error("Bad Request");
-        }
-
         const existing = await prisma.event.findUnique({
             where: { id },
             include: {

@@ -394,7 +394,7 @@ const patchEventById = async (req, res, next) => {
                     ? Number(points)
                     : points;
 
-            if (!Number.isInteger(parsedPoints) || parsedPoints <= 0) {
+            if (!Number.isInteger(parsedPoints) || parsedPoints < 0) {
                 throw new Error("Bad Request");
             }
 
@@ -457,7 +457,7 @@ const deleteEventById = async (req, res, next) => {
 
         await prisma.event.delete({ where: { id } });
 
-        return res.status(200).json({ id });
+        return res.status(204).send();
     } catch (err) {
         next(err);
     }

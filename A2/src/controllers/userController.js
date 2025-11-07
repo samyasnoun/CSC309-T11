@@ -96,7 +96,7 @@ const postUser = async (req, res, next) => {
 // GET /users - Retrieve a list of users (manager or higher)
 const getUsers = async (req, res, next) => {
   try {
-    const { name, role, verified, activated, page = 1, limit = 20 } = req.query;
+    const { name, role, verified, activated, page = 1, limit = 10 } = req.query;
 
     const pageNum = Number(page);
     const limitNum = Number(limit);
@@ -184,8 +184,6 @@ const getCurrentUser = async (req, res, next) => {
         lastLogin: true,
         verified: true,
         avatarUrl: true,
-        suspicious: true,
-        password: true,
       },
     });
     if (!user) throw new Error("Not Found");
@@ -225,7 +223,9 @@ const getUserById = async (req, res, next) => {
     if (!Number.isInteger(id) || id <= 0) throw new Error("Bad Request");
 
     const meRole = req.me?.role;
-    if (!meRole) throw new Error("Unauthorized");
+    if (!meRole || (meRole !== "cashier" && meRole !== "manager" && meRole !== "superuser")) {
+      throw new Error("Unauthorized");
+    }
 
     const isManagerOrHigher = meRole === "manager" || meRole === "superuser";
 
@@ -306,6 +306,10 @@ const patchUserById = async (req, res, next) => {
 
       if (meRole === "manager" && !["regular", "cashier"].includes(role))
         throw new Error("Forbidden");
+      
+      if (meRole === "superuser" && role === "superuser" && id === req.me.id) {
+        throw new Error("Bad Request");
+      }
     }
 
     if (email !== undefined) {
@@ -374,13 +378,13 @@ const patchCurrentUser = async (req, res, next) => {
   try {
     const me = await loadCurrentUser(req);
 
-    const { name, email, birthday, avatarUrl } = req.body ?? {};
+    const { name, email, birthday, avatar } = req.body ?? {};
 
     if (
       name === undefined &&
       email === undefined &&
       birthday === undefined &&
-      avatarUrl === undefined
+      avatar === undefined
     ) {
       throw new Error("Bad Request");
     }
@@ -416,13 +420,13 @@ const patchCurrentUser = async (req, res, next) => {
       }
     }
 
-    if (avatarUrl !== undefined) {
-      if (avatarUrl === null || avatarUrl === "") {
+    if (avatar !== undefined) {
+      if (avatar === null || avatar === "") {
         data.avatarUrl = null;
-      } else if (typeof avatarUrl !== "string" || avatarUrl.length > 2048) {
+      } else if (typeof avatar !== "string" || avatar.length > 2048) {
         throw new Error("Bad Request");
       } else {
-        data.avatarUrl = avatarUrl;
+        data.avatarUrl = avatar;
       }
     }
 
@@ -441,8 +445,6 @@ const patchCurrentUser = async (req, res, next) => {
         lastLogin: true,
         verified: true,
         avatarUrl: true,
-        suspicious: true,
-        password: true,
       },
     });
 
@@ -456,19 +458,19 @@ const patchCurrentUserPassword = async (req, res, next) => {
   try {
     const me = await loadCurrentUser(req);
 
-    const { oldPassword, newPassword } = req.body ?? {};
+    const { old, new: newPassword } = req.body ?? {};
 
-    if (!oldPassword || !newPassword) {
+    if (!old || !newPassword) {
       throw new Error("Bad Request");
     }
 
     const passwordRegex =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,64}$/;
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,20}$/;
     if (!passwordRegex.test(newPassword)) {
       throw new Error("Bad Request");
     }
 
-    const matches = await comparePassword(oldPassword, me.password);
+    const matches = await comparePassword(old, me.password);
     if (!matches) {
       return res.status(403).json({ error: "Forbidden" });
     }
@@ -504,44 +506,40 @@ const postRedemptionTransaction = async (req, res, next) => {
       throw error;
     }
 
-    const transaction = await prisma.$transaction(async (tx) => {
-      const fresh = await tx.user.findUnique({
-        where: { id: me.id },
-        select: { points: true },
-      });
+    const fresh = await prisma.user.findUnique({
+      where: { id: me.id },
+      select: { points: true },
+    });
 
-      if (!fresh || fresh.points < amountValue) {
-        const error = new Error("Bad Request");
-        error.code = "INSUFFICIENT_POINTS";
-        throw error;
-      }
+    if (!fresh || fresh.points < amountValue) {
+      const error = new Error("Bad Request");
+      error.code = "INSUFFICIENT_POINTS";
+      throw error;
+    }
 
-      await tx.user.update({
-        where: { id: me.id },
-        data: { points: fresh.points - amountValue },
-      });
-
-      return tx.transaction.create({
-        data: {
-          userId: me.id,
-          type: "redemption",
-          amount: amountValue,
-          redeemed: 0,
-          remark: typeof remark === "string" ? remark : "",
-        },
-        include: {
-          promotions: { select: { id: true } },
-        },
-      });
+    const transaction = await prisma.transaction.create({
+      data: {
+        userId: me.id,
+        type: "redemption",
+        amount: amountValue,
+        redeemed: null,
+        remark: typeof remark === "string" ? remark : "",
+        createdById: me.id,
+      },
+      include: {
+        promotions: { select: { id: true } },
+        createdBy: { select: { utorid: true } },
+      },
     });
 
     return res.status(201).json({
       id: transaction.id,
+      utorid: me.utorid,
       type: transaction.type,
+      processedBy: null,
       amount: transaction.amount,
       remark: transaction.remark || "",
-      redeemed: transaction.redeemed,
-      promotionIds: transaction.promotions.map((p) => p.id),
+      createdBy: transaction.createdBy?.utorid || null,
     });
   } catch (err) {
     if (err.code === "INSUFFICIENT_POINTS") {
@@ -570,7 +568,7 @@ const getCurrentUserTransactions = async (req, res, next) => {
   try {
     const me = await loadCurrentUser(req);
 
-    const { page = 1, limit = 20 } = req.query ?? {};
+    const { page = 1, limit = 10, type, relatedId, promotionId, amount, operator } = req.query ?? {};
     const pageNum = Number(page);
     const limitNum = Number(limit);
 
@@ -578,10 +576,30 @@ const getCurrentUserTransactions = async (req, res, next) => {
     if (!Number.isInteger(limitNum) || limitNum < 1 || limitNum > 100)
       throw new Error("Bad Request");
 
+    const where = { userId: me.id };
+
+    if (type) where.type = type;
+    if (relatedId) {
+      const rid = Number(relatedId);
+      if (isNaN(rid)) throw new Error("Bad Request");
+      where.relatedId = rid;
+    }
+    if (promotionId) {
+      const pid = Number(promotionId);
+      if (isNaN(pid)) throw new Error("Bad Request");
+      where.promotions = { some: { id: pid } };
+    }
+    if (amount !== undefined) {
+      const amt = Number(amount);
+      if (isNaN(amt) || !["gte", "lte"].includes(operator))
+        throw new Error("Bad Request");
+      where.amount = { [operator]: amt };
+    } else if (operator) throw new Error("Bad Request");
+
     const [count, rows] = await prisma.$transaction([
-      prisma.transaction.count({ where: { userId: me.id } }),
+      prisma.transaction.count({ where }),
       prisma.transaction.findMany({
-        where: { userId: me.id },
+        where,
         orderBy: { createdAt: "desc" },
         skip: (pageNum - 1) * limitNum,
         take: limitNum,
@@ -694,6 +712,8 @@ const postTransferTransaction = async (req, res, next) => {
           type: "transfer",
           amount: -amountValue,
           remark: typeof remark === "string" ? remark : "",
+          createdById: sender.id,
+          relatedId: recipientId,
         },
       });
 
@@ -702,28 +722,23 @@ const postTransferTransaction = async (req, res, next) => {
           userId: receiver.id,
           type: "transfer",
           amount: amountValue,
-          relatedId: outbound.id,
+          relatedId: sender.id,
           remark: typeof remark === "string" ? remark : "",
+          createdById: sender.id,
         },
-      });
-
-      await tx.transaction.update({
-        where: { id: outbound.id },
-        data: { relatedId: inbound.id },
       });
 
       return { outbound, inbound, receiver };
     });
 
     return res.status(201).json({
-      sentId: result.outbound.id,
-      receivedId: result.inbound.id,
-      amount: amountValue,
-      receiver: {
-        id: result.receiver.id,
-        utorid: result.receiver.utorid,
-        name: result.receiver.name,
-      },
+      id: result.outbound.id,
+      sender: sender.utorid,
+      recipient: result.receiver.utorid,
+      type: "transfer",
+      sent: amountValue,
+      remark: typeof remark === "string" ? remark : "",
+      createdBy: sender.utorid,
     });
   } catch (err) {
     if (err.code === "INSUFFICIENT_POINTS") {

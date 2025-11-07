@@ -137,21 +137,30 @@ const getPromotions = async (req, res, next) => {
     if (role === "regular" || role === "cashier") {
       filters.push({ startTime: { lte: now } });
       filters.push({ endTime: { gte: now } });
+      if (viewer) {
+        filters.push({ usedByUsers: { none: { id: viewer.id } } });
+      }
     }
 
     const where = filters.length ? { AND: filters } : {};
 
-    const [count, promotions] = await prisma.$transaction([
-      prisma.promotion.count({ where }),
-      prisma.promotion.findMany({
-        where,
-        orderBy: { startTime: "asc" },
-        skip: (pageNum - 1) * limitNum,
-        take: limitNum,
-      }),
-    ]);
+    let allPromotions = await prisma.promotion.findMany({
+      where,
+      orderBy: { startTime: "asc" },
+      include: {
+        usedByUsers: role === "regular" || role === "cashier" ? { select: { id: true } } : false,
+      },
+    });
 
-    return res.status(200).json({ count, results: promotions.map(serializePromotion) });
+    // For regular users, filter out used promotions
+    if ((role === "regular" || role === "cashier") && viewer) {
+      allPromotions = allPromotions.filter(p => !p.usedByUsers.some(u => u.id === viewer.id));
+    }
+
+    const count = allPromotions.length;
+    const paginatedPromotions = allPromotions.slice((pageNum - 1) * limitNum, pageNum * limitNum);
+
+    return res.status(200).json({ count, results: paginatedPromotions.map(serializePromotion) });
   } catch (err) {
     next(err);
   }
@@ -162,7 +171,12 @@ const getPromotionById = async (req, res, next) => {
     const id = Number(req.params.promotionId);
     if (!Number.isInteger(id) || id <= 0) throw new Error("Bad Request");
 
-    const promotion = await prisma.promotion.findUnique({ where: { id } });
+    const promotion = await prisma.promotion.findUnique({ 
+      where: { id },
+      include: {
+        usedByUsers: { select: { id: true } },
+      },
+    });
     if (!promotion) throw new Error("Not Found");
 
     const now = new Date();
@@ -172,6 +186,9 @@ const getPromotionById = async (req, res, next) => {
 
     if (role === "regular" || role === "cashier") {
       if (!(promotion.startTime <= now && promotion.endTime >= now)) {
+        throw new Error("Not Found");
+      }
+      if (viewer && promotion.usedByUsers.some(u => u.id === viewer.id)) {
         throw new Error("Not Found");
       }
     }
@@ -190,12 +207,13 @@ const patchPromotionById = async (req, res, next) => {
     const promotion = await prisma.promotion.findUnique({ where: { id } });
     if (!promotion) throw new Error("Not Found");
 
-    const { name, description, startTime, endTime, rate, points, minSpending } =
+    const { name, description, type, startTime, endTime, rate, points, minSpending } =
       req.body ?? {};
 
     if (
       name === undefined &&
       description === undefined &&
+      type === undefined &&
       startTime === undefined &&
       endTime === undefined &&
       rate === undefined &&
@@ -209,7 +227,7 @@ const patchPromotionById = async (req, res, next) => {
 
     if (promotion.startTime <= now) {
       if (startTime !== undefined) throw new Error("Bad Request");
-      if (rate !== undefined || points !== undefined || minSpending !== undefined) {
+      if (name !== undefined || description !== undefined || type !== undefined || rate !== undefined || points !== undefined || minSpending !== undefined) {
         throw new Error("Bad Request");
       }
     }
@@ -242,6 +260,11 @@ const patchPromotionById = async (req, res, next) => {
       data.endTime = end;
     }
 
+    if (type !== undefined) {
+      if (!VALID_TYPES.includes(type)) throw new Error("Bad Request");
+      data.type = type;
+    }
+
     if (data.startTime && data.endTime && data.endTime <= data.startTime) {
       throw new Error("Bad Request");
     }
@@ -270,7 +293,22 @@ const patchPromotionById = async (req, res, next) => {
 
     const updated = await prisma.promotion.update({ where: { id }, data });
 
-    return res.status(200).json(serializePromotion(updated));
+    const response = {
+      id: updated.id,
+      name: updated.name,
+      type: updated.type,
+    };
+    
+    if (name !== undefined) response.name = updated.name;
+    if (description !== undefined) response.description = updated.description;
+    if (type !== undefined) response.type = updated.type;
+    if (startTime !== undefined) response.startTime = updated.startTime;
+    if (endTime !== undefined) response.endTime = updated.endTime;
+    if (rate !== undefined) response.rate = updated.rate;
+    if (points !== undefined) response.points = updated.points;
+    if (minSpending !== undefined) response.minSpending = updated.minSpending;
+
+    return res.status(200).json(response);
   } catch (err) {
     next(err);
   }

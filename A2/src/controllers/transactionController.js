@@ -127,10 +127,9 @@ const postTransaction = async (req, res, next) => {
       utorid: customer.utorid,
       type: transaction.type,
       spent: transaction.spent,
-      amount: transaction.amount,
+      earned: transaction.amount,
       promotionIds: transaction.promotions.map((p) => p.id),
-      suspicious: transaction.suspicious,
-      remark: transaction.remark,
+      remark: transaction.remark || "",
       createdBy: cashier?.utorid || null,
     });
   } catch (err) {
@@ -402,73 +401,35 @@ const patchRedemptionTransactionStatusById = async (req, res, next) => {
     if (transaction.type !== "redemption") throw new Error("Bad Request");
 
     if (processed) {
-      if (transaction.redeemed === transaction.amount) {
-        return res.status(200).json({
-          id: transaction.id,
-          utorid: transaction.user.utorid,
-          type: transaction.type,
-          amount: transaction.amount,
-          redeemed: transaction.redeemed,
-          promotionIds: transaction.promotions.map((p) => p.id),
-          remark: transaction.remark || "",
-          createdBy: transaction.createdBy?.utorid || null,
-        });
+      if (transaction.redeemed !== null && transaction.redeemed === transaction.amount) {
+        throw new Error("Bad Request");
       }
 
-      const updated = await prisma.transaction.update({
-        where: { id },
-        data: { redeemed: transaction.amount },
-        include: { user: true, promotions: { select: { id: true } }, createdBy: { select: { utorid: true } } },
+      const updated = await prisma.$transaction(async (tx) => {
+        await tx.user.update({
+          where: { id: transaction.userId },
+          data: { points: { decrement: transaction.amount } },
+        });
+
+        return tx.transaction.update({
+          where: { id },
+          data: { redeemed: transaction.amount },
+          include: { user: true, promotions: { select: { id: true } }, createdBy: { select: { utorid: true } } },
+        });
       });
 
       return res.status(200).json({
         id: updated.id,
         utorid: updated.user.utorid,
         type: updated.type,
-        amount: updated.amount,
+        processedBy: req.me?.utorid || null,
         redeemed: updated.redeemed,
-        promotionIds: updated.promotions.map((p) => p.id),
         remark: updated.remark || "",
         createdBy: updated.createdBy?.utorid || null,
       });
     }
 
-    if (!transaction.redeemed || transaction.redeemed === 0) {
-      return res.status(200).json({
-        id: transaction.id,
-        utorid: transaction.user.utorid,
-        type: transaction.type,
-        amount: transaction.amount,
-        redeemed: transaction.redeemed ?? 0,
-        promotionIds: transaction.promotions.map((p) => p.id),
-        remark: transaction.remark || "",
-        createdBy: transaction.createdBy?.utorid || null,
-      });
-    }
-
-    const result = await prisma.$transaction(async (tx) => {
-      await tx.user.update({
-        where: { id: transaction.userId },
-        data: { points: { increment: transaction.amount } },
-      });
-
-      return tx.transaction.update({
-        where: { id },
-        data: { redeemed: 0 },
-        include: { user: true, promotions: { select: { id: true } }, createdBy: { select: { utorid: true } } },
-      });
-    });
-
-    return res.status(200).json({
-      id: result.id,
-      utorid: result.user.utorid,
-      type: result.type,
-      amount: result.amount,
-      redeemed: result.redeemed,
-      promotionIds: result.promotions.map((p) => p.id),
-      remark: result.remark || "",
-      createdBy: result.createdBy?.utorid || null,
-    });
+    throw new Error("Bad Request");
   } catch (err) {
     next(err);
   }

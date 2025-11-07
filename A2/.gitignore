@@ -1,4 +1,4 @@
 node_modules
 # Keep environment variables out of version control
 .env
-prisma/dev*../CSC309-A2
+prisma/dev*

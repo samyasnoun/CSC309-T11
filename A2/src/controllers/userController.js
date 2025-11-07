@@ -206,11 +206,17 @@ const getCurrentUser = async (req, res, next) => {
         startTime: true,
         endTime: true,
         description: true,
+        type: true,
       },
       orderBy: { id: "asc" },
     });
 
-    return res.status(200).json({ ...user, promotions });
+    const formattedPromotions = promotions.map(p => ({
+      ...p,
+      type: p.type === "onetime" ? "one-time" : p.type,
+    }));
+
+    return res.status(200).json({ ...user, promotions: formattedPromotions });
   } catch (err) {
     next(err);
   }
@@ -272,11 +278,17 @@ const getUserById = async (req, res, next) => {
         minSpending: true,
         rate: true,
         points: true,
+        type: true,
       },
       orderBy: { id: "asc" },
     });
 
-    return res.status(200).json({ ...user, promotions });
+    const formattedPromotions = promotions.map(p => ({
+      ...p,
+      type: p.type === "onetime" ? "one-time" : p.type,
+    }));
+
+    return res.status(200).json({ ...user, promotions: formattedPromotions });
   } catch (err) {
     next(err);
   }

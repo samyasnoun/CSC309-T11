@@ -619,7 +619,7 @@ const patchRedemptionTransactionStatusById = async (req, res, next) => {
       processedBy: processor?.utorid || null,
       redeemed: Math.abs(result.amount),
       remark: result.remark || "",
-      createdBy: result.createdBy?.utorid || null,
+      createdBy: result.createdBy?.utorid || result.user.utorid,
     });
   } catch (err) {
     next(err);

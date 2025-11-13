@@ -3,7 +3,7 @@ import { Link, Outlet } from 'react-router-dom';
 
 const Layout = () => {
     const get_academic_term = () => {
-        const month = new Date().getMonth() + 1; // getMonth() is 0-indexed, so add 1
+        const month = new Date().getMonth() + 1;
         const year = new Date().getFullYear();
         
         let season;

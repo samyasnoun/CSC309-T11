@@ -1,5 +1,5 @@
 import './App.css';
-import { useState } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { CitiesProvider } from './contexts/CitiesContext';
 import Layout from './components/Layout';
 import Home from './pages/Home';
@@ -7,23 +7,16 @@ import NotFound from './pages/NotFound';
 import Detail from './pages/Detail';
 
 const App = () => {
-    const [page, setPage] = useState("home");
-    let component;
-
-    if (page === "home") {
-        component = <Home setPage={setPage} />;
-    }
-    else if (typeof(page) === "number") {
-        component = <Detail cityId={page} setPage={setPage} />;
-    }
-    else {
-        component = <NotFound />;
-    }
-
     return <CitiesProvider>
-        <Layout>
-            {component}
-        </Layout>
+        <BrowserRouter>
+            <Routes>
+                <Route path="/" element={<Layout />}>
+                    <Route index element={<Home />} />
+                    <Route path=":cityId" element={<Detail />} />
+                    <Route path="*" element={<NotFound />} />
+                </Route>
+            </Routes>
+        </BrowserRouter>
     </CitiesProvider>;
 };
 

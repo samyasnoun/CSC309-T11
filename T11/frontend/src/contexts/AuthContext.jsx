@@ -1,9 +1,10 @@
-import React, { createContext, useContext, useEffect, useState} from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext(null);
 
-// TODO: get the BACKEND_URL.
+// Backend base URL (overridable via Vite env var)
+const BACKEND_URL = (import.meta.env?.VITE_BACKEND_URL) || "http://localhost:3000";
 
 /*
  * This provider should export a `user` context state that is 
@@ -16,10 +17,40 @@ const AuthContext = createContext(null);
  */
 export const AuthProvider = ({ children }) => {
     const navigate = useNavigate();
-    // const user = null; // TODO: Modify me.
+    const [user, setUser] = useState(null);
 
-    useEffect({
-        // TODO: complete me, by retriving token from localStorage and make an api call to GET /user/me.
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            setUser(null);
+            return;
+        }
+
+        const controller = new AbortController();
+        const loadUser = async () => {
+            try {
+                const res = await fetch(`${BACKEND_URL}/user/me`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    signal: controller.signal,
+                });
+                if (!res.ok) {
+                    // Token invalid/expired
+                    localStorage.removeItem('token');
+                    setUser(null);
+                    return;
+                }
+                const data = await res.json();
+                setUser(data.user || null);
+            } catch (_) {
+                setUser(null);
+            }
+        };
+
+        loadUser();
+        return () => controller.abort();
     }, [])
 
     /*
@@ -28,8 +59,8 @@ export const AuthProvider = ({ children }) => {
      * @remarks This function will always navigate to "/".
      */
     const logout = () => {
-        // TODO: complete me
-
+        localStorage.removeItem('token');
+        setUser(null);
         navigate("/");
     };
 
@@ -42,8 +73,36 @@ export const AuthProvider = ({ children }) => {
      * @returns {string} - Upon failure, Returns an error message.
      */
     const login = async (username, password) => {
-        // TODO: complete me
-        return "TODO: complete me";
+        try {
+            const res = await fetch(`${BACKEND_URL}/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({ message: 'Login failed' }));
+                return err.message || 'Login failed';
+            }
+            const { token } = await res.json();
+            if (!token) return 'Invalid response from server';
+            localStorage.setItem('token', token);
+
+            // Fetch user profile to populate context
+            const me = await fetch(`${BACKEND_URL}/user/me`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (me.ok) {
+                const data = await me.json();
+                setUser(data.user || null);
+            } else {
+                setUser(null);
+            }
+
+            navigate('/profile');
+            return '';
+        } catch (_) {
+            return 'Network error during login';
+        }
     };
 
     /**
@@ -54,8 +113,21 @@ export const AuthProvider = ({ children }) => {
      * @returns {string} - Upon failure, returns an error message.
      */
     const register = async (userData) => {
-        // TODO: complete me
-        return "TODO: complete me";
+        try {
+            const res = await fetch(`${BACKEND_URL}/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(userData)
+            });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({ message: 'Registration failed' }));
+                return err.message || 'Registration failed';
+            }
+            navigate('/success');
+            return '';
+        } catch (_) {
+            return 'Network error during registration';
+        }
     };
 
     return (

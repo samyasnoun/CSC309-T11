@@ -1,5 +1,0 @@
-We developed our code and tested it using Postman. We utilized AI tools to assist with debugging and to verify that our database schema aligned
-
-with the specifications outlined in the handout.
-
-
